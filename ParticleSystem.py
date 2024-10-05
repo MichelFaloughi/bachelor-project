@@ -33,26 +33,6 @@ class ParticleSystem:
     ## Running the Simulation ##
     ############################
     
-    
-    def run_simulation(self):
-        pygame.init()
-
-        # Game Loop
-        running = True
-        while running:
-            self.screen.fill((0, 0, 0))  # Clear screen
-            
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
-            
-            for particle in self.particles:
-                particle.update_position()  # Update each particle's position
-
-            self.draw_board()  # Draw all particles after updating their positions
-            pygame.display.update()  # Update the display
-
-
 
     def draw_board(self): 
         for particle in self.particles:
@@ -66,7 +46,7 @@ class ParticleSystem:
 
         for y in range(self.height):
             for x in range(self.width):
-                num = random.random()
+                num = random.random() # random number between 0 and 1
                 v = random.choice(self.possible_directions)
 
                 if num < self.mu:
@@ -84,26 +64,25 @@ class ParticleSystem:
 
 
 
+    def run_simulation(self):
+        pygame.init()
 
+        # Game Loop
+        running = True
+        while running:
+            self.screen.fill((0, 0, 0))  # Clear screen
+            
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+            
+            # Pick a particle uniformly at random, we can show that we 
+            # are fairly confident that no particle will be left out
+            p = random.choice(self.particles)
+            p.update_particle(self.delta)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            self.draw_board()  # Draw all particles after updating their positions
+            pygame.display.update()  # Update the display
 
 
 
@@ -128,19 +107,29 @@ class Particle:
         self.board[self.x, self.y] = 1
 
 
-    def update_position(self):
-        new_x = (self.x + self.v[0]) % self.board.shape[0]  # Wrap horizontally
-        new_y = (self.y + self.v[1]) % self.board.shape[1]  # Wrap vertically
 
-        # Only move if the new position is empty
-        if self.board[new_x, new_y] == 0:
-            self.board[self.x, self.y] = 0  # Clear the old position
-            self.x, self.y = new_x, new_y
-            self.board[self.x, self.y] = 1  # Update the board with new position
+    # pick a particle at random before calling this
+    def update_particle(self, delta):
+        
+        assert delta < 1 and delta > 0
+        num = random.random() # random number between 0 and 1
 
+        if num < delta: # change direction/velocity, possible to re-pick current direction
+            
+            self.v = random.choice(global_possible_directions)
+            # we don't move ! only chance velocity
 
-    def update_velocity(self, new_velocity):
-        self.v = new_velocity
+        else:
+            # Move the particle by one amount of its velocity
+            new_x = (self.x + self.v[0]) % self.board.shape[0]  # Wrap horizontally
+            new_y = (self.y + self.v[1]) % self.board.shape[1]  # Wrap vertically
+
+            # Only move if the new position is empty
+            if self.board[new_x, new_y] == 0:
+                self.board[self.x, self.y] = 0  # Clear the old position
+                self.x, self.y = new_x, new_y
+                self.board[self.x, self.y] = 1  # Update the board with new position
+
 
     def draw(self, screen):
         screen.blit(self.image, (max(0, int(self.x)), max(0, int(self.y))))
