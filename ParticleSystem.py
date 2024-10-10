@@ -7,7 +7,7 @@ import numpy as np
 
 class ParticleSystem:
 
-    def __init__( self, width:int, height:int, delta:float, mu:float, 
+    def __init__( self, width:int, height:int, delta:float, mu:float, dot_size:int, 
             world_title:str='Interactive Particle System', icon_file_path:str='kcl.png' ):
         
         assert mu > 0 and mu < 1 and delta > 0 and delta < 1
@@ -15,9 +15,13 @@ class ParticleSystem:
         self.width = width
         self.height = height
         self.delta = delta # probability to change direction
-        self.mu = mu # probability to spawn
+        self.mu = mu # probability to spawn, also known as density 
+        self.dot_size = dot_size
         
-        
+        self.refresh_rate = mu * width * height
+        self.num_updates = 0
+
+
         self.board = np.zeros((self.width, self.height), dtype=int)
         self.possible_directions = global_possible_directions
         
@@ -26,7 +30,10 @@ class ParticleSystem:
 
         self.world_title = world_title
         self.icon = pygame.image.load(icon_file_path)
-        self.screen = pygame.display.set_mode((self.width, self.height))
+
+        self.screen = pygame.display.set_mode((self.width * self.dot_size,
+                                                self.height * self.dot_size
+                                                ))
 
 
     ############################
@@ -38,8 +45,8 @@ class ParticleSystem:
         for particle in self.particles:
             particle.draw(self.screen)
     
-    def draw_tile(self, x, y, color):
-        pygame.draw.rect(self.screen, color, pygame.Rect(x,y))
+    # def draw_tile(self, x, y, color):
+    #   pygame.draw.rect(self.screen, color, pygame.Rect(x,y))
 
     def generate_random_particles(self) -> list:
         return_list = []
@@ -51,7 +58,7 @@ class ParticleSystem:
 
                 if num < self.mu:
                     self.board[x, y] = 1  # Set particle on the board
-                    return_list.append(Particle(x, y, v, self.board))  # Create particle
+                    return_list.append(Particle(x, y, v, self.dot_size, self.board))  # Create particle
                         
         return return_list
 
@@ -81,9 +88,13 @@ class ParticleSystem:
             p = random.choice(self.particles)
             p.update_particle(self.delta)
 
-            self.draw_board()  # Draw all particles after updating their positions
-            pygame.display.update()  # Update the display
+            self.num_updates += 1
 
+            if self.num_updates >= self.refresh_rate:
+                
+                self.draw_board()  # Draw all particles after updating their positions
+                pygame.display.update()  # Update the display
+                self.num_updates = 0
 
 
 
@@ -92,13 +103,14 @@ import pygame
 
 class Particle:
 
-    def __init__(self, x_position:int, y_position:int, velocity_vector:list, board):
+    def __init__(self, x_position:int, y_position:int, velocity_vector:list, dot_size, board):
         
         assert len(velocity_vector) == 2, 'Problem with the velocity vector'
 
-        self.x = x_position
+        self.x = x_position 
         self.y = y_position
         self.v = velocity_vector
+        self.size = dot_size
         self.board = board
 
         self.image = pygame.image.load('white_dot.png')
@@ -132,8 +144,16 @@ class Particle:
 
 
     def draw(self, screen):
-        screen.blit(self.image, (max(0, int(self.x)), max(0, int(self.y))))
+        
+        # screen.blit(self.image, (max(0, int(self.x)), max(0, int(self.y))))
 
+        # other way
+        color = (255,255,255)
+        pygame.draw.rect(screen, color, pygame.Rect(self.x * self.size,
+                                                    self.y * self.size, 
+                                                    self.size, # this is dot size
+                                                    self.size  # this too
+                                                    ))
 
 
 
