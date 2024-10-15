@@ -18,7 +18,8 @@ class ParticleSystem:
         self.mu = mu # probability to spawn, also known as density 
         self.dot_size = dot_size
         
-        self.refresh_rate = mu * width * height
+        self.refresh_rate = mu * width * height 
+        # self.refresh_rate = 1
         self.num_updates = 0
 
 
@@ -34,19 +35,10 @@ class ParticleSystem:
         self.screen = pygame.display.set_mode((self.width * self.dot_size,
                                                 self.height * self.dot_size
                                                 ))
-
-
-    ############################
-    ## Running the Simulation ##
-    ############################
     
-
     def draw_board(self): 
         for particle in self.particles:
             particle.draw(self.screen)
-    
-    # def draw_tile(self, x, y, color):
-    #   pygame.draw.rect(self.screen, color, pygame.Rect(x,y))
 
     def generate_random_particles(self) -> list:
         return_list = []
@@ -62,27 +54,32 @@ class ParticleSystem:
                         
         return return_list
 
-
-
-
-
-
-
-
-
-
     def run_simulation(self):
         pygame.init()
+        pygame.display.set_caption(self.world_title) # Title
+        pygame.display.set_icon(self.icon) # Icon
 
         # Game Loop
         running = True
         while running:
-            self.screen.fill((0, 0, 0))  # Clear screen
+            self.screen.fill((0, 0, 0))  # Make screen all black, clear screen
             
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
-            
+
+                if event.type == pygame.KEYDOWN: # Check if a key has been pressed
+
+                    print(f'{event.key} has been pressed')
+
+
+                    if event.key == pygame.K_d: # INCREASE REFRESH RATE
+                        self.refresh_rate *= 5
+                    
+                    if event.key == pygame.K_s: # DECREASE REFRESH
+                        self.refresh_rate *= 0.5
+
+                        
             # Pick a particle uniformly at random, we can show that we 
             # are fairly confident that no particle will be left out
             p = random.choice(self.particles)
@@ -96,6 +93,7 @@ class ParticleSystem:
                 pygame.display.update()  # Update the display
                 self.num_updates = 0
 
+            
 
 
 # This class is meant to represent a Particle object in our particle system
@@ -117,8 +115,6 @@ class Particle:
         # For icons, a useful link is https://www.flaticon.com/search?word=acrade%20space
 
         self.board[self.x, self.y] = 1
-
-
 
     # pick a particle at random before calling this
     def update_particle(self, delta):
@@ -142,7 +138,6 @@ class Particle:
                 self.x, self.y = new_x, new_y
                 self.board[self.x, self.y] = 1  # Update the board with new position
 
-
     def draw(self, screen):
         
         # screen.blit(self.image, (max(0, int(self.x)), max(0, int(self.y))))
@@ -154,6 +149,20 @@ class Particle:
                                                     self.size, # this is dot size
                                                     self.size  # this too
                                                     ))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

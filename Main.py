@@ -1,10 +1,10 @@
 from ParticleSystem import ParticleSystem
 
-WORLD_WIDTH = 200
-WORLD_HEIGHT = 200
+WORLD_WIDTH = 90 # 200 # 20
+WORLD_HEIGHT = 90 # 200 # 20
 DELTA = 0.1
-MU = 0.1
-DOT_SIZE = 4
+MU = 0.3
+DOT_SIZE = 10 # 4
 
 
 world = ParticleSystem(
