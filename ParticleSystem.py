@@ -60,6 +60,7 @@ class ParticleSystem:
         pygame.display.set_icon(self.icon) # Icon
 
         # Game Loop
+        paused = False
         running = True
         while running:
             self.screen.fill((0, 0, 0))  # Make screen all black, clear screen
@@ -79,13 +80,17 @@ class ParticleSystem:
                     if event.key == pygame.K_s: # DECREASE REFRESH
                         self.refresh_rate *= 0.5
 
-                        
-            # Pick a particle uniformly at random, we can show that we 
-            # are fairly confident that no particle will be left out
-            p = random.choice(self.particles)
-            p.update_particle(self.delta)
-
-            self.num_updates += 1
+                    if event.key == pygame.K_SPACE:
+                        paused = not paused  # Toggle pause
+                        # PAUSE UNTIL SPACE IS PRESSED AGAIN THEN RESUME
+           
+            if not paused:
+                # Normal simulation update
+                p = random.choice(self.particles)
+                p.update_particle(self.delta)
+                self.num_updates += 1           
+                # Pick a particle uniformly at random, we can show that we 
+                # are fairly confident that no particle will be left out
 
             if self.num_updates >= self.refresh_rate:
                 
