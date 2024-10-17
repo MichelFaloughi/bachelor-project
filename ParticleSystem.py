@@ -56,47 +56,49 @@ class ParticleSystem:
 
     def run_simulation(self):
         pygame.init()
-        pygame.display.set_caption(self.world_title) # Title
-        pygame.display.set_icon(self.icon) # Icon
+        pygame.display.set_caption(self.world_title)  # Title
+        pygame.display.set_icon(self.icon)  # Icon
 
         # Game Loop
-        paused = False
         running = True
+        paused = False
+        
         while running:
-            self.screen.fill((0, 0, 0))  # Make screen all black, clear screen
-            
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
 
-                if event.type == pygame.KEYDOWN: # Check if a key has been pressed
-
+                if event.type == pygame.KEYDOWN:  # Check if a key has been pressed
                     print(f'{event.key} has been pressed')
 
-
-                    if event.key == pygame.K_d: # INCREASE REFRESH RATE
+                    if event.key == pygame.K_d:  # INCREASE REFRESH RATE
                         self.refresh_rate *= 5
-                    
-                    if event.key == pygame.K_s: # DECREASE REFRESH
+
+                    if event.key == pygame.K_s:  # DECREASE REFRESH RATE
                         self.refresh_rate *= 0.5
 
-                    if event.key == pygame.K_SPACE:
-                        paused = not paused  # Toggle pause
-                        # PAUSE UNTIL SPACE IS PRESSED AGAIN THEN RESUME
-           
+                    if event.key == pygame.K_SPACE:  # PAUSE or RESUME
+                        paused = not paused  # Toggle pause state
+
             if not paused:
-                # Normal simulation update
+                # Pick a particle uniformly at random
                 p = random.choice(self.particles)
+                
+                # Clear the old position of the particle
+                p.clear_old_position(self.screen)
+                
+                # Update the particle position
                 p.update_particle(self.delta)
-                self.num_updates += 1           
-                # Pick a particle uniformly at random, we can show that we 
-                # are fairly confident that no particle will be left out
+                
+                # Draw the particle at the new position
+                p.draw(self.screen)
+
+                self.num_updates += 1
 
             if self.num_updates >= self.refresh_rate:
-                
-                self.draw_board()  # Draw all particles after updating their positions
-                pygame.display.update()  # Update the display
+                pygame.display.update()  # Only update the display once after all particles are drawn
                 self.num_updates = 0
+
 
             
 
@@ -107,7 +109,6 @@ import pygame
 class Particle:
 
     def __init__(self, x_position:int, y_position:int, velocity_vector:list, dot_size, board):
-        
         assert len(velocity_vector) == 2, 'Problem with the velocity vector'
 
         self.x = x_position 
@@ -116,24 +117,23 @@ class Particle:
         self.size = dot_size
         self.board = board
 
-        self.image = pygame.image.load('white_dot.png')
-        # For icons, a useful link is https://www.flaticon.com/search?word=acrade%20space
+        self.previous_x = x_position  # Keep track of the previous position
+        self.previous_y = y_position
 
         self.board[self.x, self.y] = 1
 
-    # pick a particle at random before calling this
     def update_particle(self, delta):
-        
         assert delta < 1 and delta > 0
-        num = random.random() # random number between 0 and 1
+        num = random.random()  # random number between 0 and 1
 
-        if num < delta: # change direction/velocity, possible to re-pick current direction
-            
+        # Save current position as previous position before moving
+        self.previous_x, self.previous_y = self.x, self.y
+
+        if num < delta:  # Change direction/velocity
             self.v = random.choice(global_possible_directions)
-            # we don't move ! only chance velocity
 
         else:
-            # Move the particle by one amount of its velocity
+            # Move the particle by its velocity
             new_x = (self.x + self.v[0]) % self.board.shape[0]  # Wrap horizontally
             new_y = (self.y + self.v[1]) % self.board.shape[1]  # Wrap vertically
 
@@ -143,17 +143,20 @@ class Particle:
                 self.x, self.y = new_x, new_y
                 self.board[self.x, self.y] = 1  # Update the board with new position
 
-    def draw(self, screen):
-        
-        # screen.blit(self.image, (max(0, int(self.x)), max(0, int(self.y))))
+    def clear_old_position(self, screen):
+        """Clear the previous position by drawing over it with the background color."""
+        background_color = (0, 0, 0)  # Black background
+        pygame.draw.rect(screen, background_color, pygame.Rect(self.previous_x * self.size,
+                                                               self.previous_y * self.size, 
+                                                               self.size, self.size))
 
-        # other way
-        color = (255,255,255)
+    def draw(self, screen):
+        """Draw the particle at the current position."""
+        color = (255, 255, 255)  # White color
         pygame.draw.rect(screen, color, pygame.Rect(self.x * self.size,
                                                     self.y * self.size, 
-                                                    self.size, # this is dot size
-                                                    self.size  # this too
-                                                    ))
+                                                    self.size,  # dot size
+                                                    self.size))
 
 
 
