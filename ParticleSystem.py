@@ -18,23 +18,23 @@ class ParticleSystem:
         self.mu = mu # probability to spawn, also known as density 
         self.dot_size = dot_size
         
-        self.refresh_rate = mu * width * height 
-        # self.refresh_rate = 1
+        # self.refresh_rate = mu * width * height 
+        self.refresh_rate = 8
         self.num_updates = 0
 
 
         self.board = np.zeros((self.width, self.height), dtype=int)
         self.possible_directions = global_possible_directions
         
+        self.screen = pygame.display.set_mode((self.width * self.dot_size,
+                                                self.height * self.dot_size
+                                                ))
+        
         self.particles = self.generate_random_particles()
         self.num_particles = len(self.particles)
 
         self.world_title = world_title
         self.icon = pygame.image.load(icon_file_path)
-
-        self.screen = pygame.display.set_mode((self.width * self.dot_size,
-                                                self.height * self.dot_size
-                                                ))
     
     def draw_board(self): 
         for particle in self.particles:
@@ -50,7 +50,7 @@ class ParticleSystem:
 
                 if num < self.mu:
                     self.board[x, y] = 1  # Set particle on the board
-                    return_list.append(Particle(x, y, v, self.dot_size, self.board))  # Create particle
+                    return_list.append(Particle(x, y, v, self.dot_size, self.board, self.screen))  # Create particle
                         
         return return_list
 
@@ -84,14 +84,9 @@ class ParticleSystem:
                 # Pick a particle uniformly at random
                 p = random.choice(self.particles)
                 
-                # Clear the old position of the particle
-                p.clear_old_position(self.screen)
-                
-                # Update the particle position
-                p.update_particle(self.delta)
-                
-                # Draw the particle at the new position
-                p.draw(self.screen)
+                # p.clear_old_position(self.screen)                
+                p.update_particle(self.delta)                
+                # p.draw(self.screen)
 
                 self.num_updates += 1
 
@@ -108,7 +103,7 @@ import pygame
 
 class Particle:
 
-    def __init__(self, x_position:int, y_position:int, velocity_vector:list, dot_size, board):
+    def __init__(self, x_position:int, y_position:int, velocity_vector:list, dot_size, board, screen):
         assert len(velocity_vector) == 2, 'Problem with the velocity vector'
 
         self.x = x_position 
@@ -121,6 +116,8 @@ class Particle:
         self.previous_y = y_position
 
         self.board[self.x, self.y] = 1
+
+        self.screen = screen
 
     def update_particle(self, delta):
         assert delta < 1 and delta > 0
@@ -142,6 +139,11 @@ class Particle:
                 self.board[self.x, self.y] = 0  # Clear the old position
                 self.x, self.y = new_x, new_y
                 self.board[self.x, self.y] = 1  # Update the board with new position
+
+            self.clear_old_position(self.screen)
+            self.draw(self.screen)
+
+
 
     def clear_old_position(self, screen):
         """Clear the previous position by drawing over it with the background color."""
