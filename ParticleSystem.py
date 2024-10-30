@@ -1,5 +1,4 @@
 # This class is meant to represent our Worl (our Taurus) where the Particle System lives
-# from Particle import Particle
 from global_variables import global_possible_directions
 import pygame
 import random
@@ -17,6 +16,7 @@ class ParticleSystem:
         self.delta = delta # probability to change direction
         self.mu = mu # probability to spawn, also known as density 
         self.dot_size = dot_size
+        self.num_iterations = self.width * self.height ** 2
         
         self.refresh_rate = mu * width * height 
         # self.refresh_rate = 1
@@ -40,6 +40,34 @@ class ParticleSystem:
         for particle in self.particles:
             particle.draw(self.screen)
 
+    def generate_random_particles_square_start(self) -> list:
+        return_list = []
+
+        half_width = self.width // 2
+        half_height = self.height // 2
+
+        width_possible_values = range(half_width - 7, half_width + 7)
+        height_possible_values = range(half_height - 7, half_height + 7)
+
+
+        for y in range(self.height):
+            for x in range(self.width):
+
+                if x in width_possible_values and y in height_possible_values:
+                    num = 0
+
+                else:
+                    num = random.random() # random number between 0 and 1
+                
+                
+                v = random.choice(self.possible_directions)
+
+                if num < self.mu:
+                    self.board[x, y] = 1  # Set particle on the board
+                    return_list.append(Particle(x, y, v, self.dot_size, self.board))  # Create particle
+                        
+        return return_list
+    
     def generate_random_particles(self) -> list:
         return_list = []
 
@@ -54,49 +82,60 @@ class ParticleSystem:
                         
         return return_list
 
+
+
     def run_simulation(self):
         pygame.init()
-        pygame.display.set_caption(self.world_title) # Title
-        pygame.display.set_icon(self.icon) # Icon
+        pygame.display.set_caption(self.world_title)  # Title
+        pygame.display.set_icon(self.icon)  # Icon
 
-        # Game Loop
+        # Initialize font
+        font = pygame.font.Font(None, 36)  # Use default font; set size to 36
+
         paused = False
-        running = True
-        while running:
-            self.screen.fill((0, 0, 0))  # Make screen all black, clear screen
+        for current_iteration in range(self.num_iterations):
             
+            # Clear screen
+            self.screen.fill((0, 0, 0))
+
+            # Event handling
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    running = False
+                    pygame.quit()
+                    return
 
-                if event.type == pygame.KEYDOWN: # Check if a key has been pressed
-
-                    print(f'{event.key} has been pressed')
-
-
-                    if event.key == pygame.K_d: # INCREASE REFRESH RATE
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_d:
                         self.refresh_rate *= 5
-                    
-                    if event.key == pygame.K_s: # DECREASE REFRESH
+                    if event.key == pygame.K_s:
                         self.refresh_rate *= 0.5
-
                     if event.key == pygame.K_SPACE:
-                        paused = not paused  # Toggle pause
-                        # PAUSE UNTIL SPACE IS PRESSED AGAIN THEN RESUME
-           
+                        paused = not paused
+
+            # Update particles if not paused
             if not paused:
-                # Normal simulation update
                 p = random.choice(self.particles)
                 p.update_particle(self.delta)
-                self.num_updates += 1           
-                # Pick a particle uniformly at random, we can show that we 
-                # are fairly confident that no particle will be left out
+                self.num_updates += 1
 
+            # Update screen with new positions and iteration count
             if self.num_updates >= self.refresh_rate:
+                self.draw_board()
                 
-                self.draw_board()  # Draw all particles after updating their positions
-                pygame.display.update()  # Update the display
+                # Render the iteration text
+                text_surface = font.render(
+                    f"Iteration: {current_iteration + 1}/{self.num_iterations}", 
+                    True, 
+                    (255, 255, 0)
+                )
+                
+                # Draw text on screen at the top-left corner
+                self.screen.blit(text_surface, (10, 10))
+
+                pygame.display.update()  # Refresh display
                 self.num_updates = 0
+
+        pygame.quit()
 
             
 
@@ -148,7 +187,7 @@ class Particle:
         # screen.blit(self.image, (max(0, int(self.x)), max(0, int(self.y))))
 
         # other way
-        color = (255,255,255)
+        color = (255,0,255)
         pygame.draw.rect(screen, color, pygame.Rect(self.x * self.size,
                                                     self.y * self.size, 
                                                     self.size, # this is dot size
