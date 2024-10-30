@@ -17,7 +17,8 @@ class ParticleSystem:
         self.delta = delta # probability to change direction
         self.mu = mu # probability to spawn, also known as density 
         self.dot_size = dot_size
-        
+        self.num_iterations = self.width * self.height ** 2
+
         # self.refresh_rate = mu * width * height 
         self.refresh_rate = 8
         self.num_updates = 0
@@ -53,23 +54,61 @@ class ParticleSystem:
                     return_list.append(Particle(x, y, v, self.dot_size, self.board, self.screen))  # Create particle
                         
         return return_list
+    
+    def generate_random_particles_square_start(self) -> list:
+        return_list = []
+
+        half_width = self.width // 2
+        half_height = self.height // 2
+
+        width_possible_values = range(half_width - 7, half_width + 7)
+        height_possible_values = range(half_height - 7, half_height + 7)
+
+
+        for y in range(self.height):
+            for x in range(self.width):
+
+                if x in width_possible_values and y in height_possible_values:
+                    num = 0
+
+                else:
+                    num = random.random() # random number between 0 and 1
+                
+                
+                v = random.choice(self.possible_directions)
+
+                if num < self.mu:
+                    self.board[x, y] = 1  # Set particle on the board
+                    return_list.append(Particle(x, y, v, self.dot_size, self.board))  # Create particle
+                        
+        return return_list
+    
 
     def run_simulation(self):
         pygame.init()
         pygame.display.set_caption(self.world_title)  # Title
         pygame.display.set_icon(self.icon)  # Icon
 
+        # Initialize font
+        font = pygame.font.Font(None, 36)  # Use default font; set size to 36
+
         # Game Loop
-        running = True
+        # running = True
         paused = False
         
-        while running:
+        for current_iteration in range(self.num_iterations):
+            
+            # Clear screen
+            self.screen.fill((0, 0, 0))
+
+            # Event handling
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    running = False
+                    pygame.quit()
+                    return
 
                 if event.type == pygame.KEYDOWN:  # Check if a key has been pressed
-                    print(f'{event.key} has been pressed')
+                    # print(f'{event.key} has been pressed')
 
                     if event.key == pygame.K_d:  # INCREASE REFRESH RATE
                         self.refresh_rate *= 5
@@ -83,19 +122,28 @@ class ParticleSystem:
             if not paused:
                 # Pick a particle uniformly at random
                 p = random.choice(self.particles)
-                
-                # p.clear_old_position(self.screen)                
                 p.update_particle(self.delta)                
-                # p.draw(self.screen)
-
                 self.num_updates += 1
 
             if self.num_updates >= self.refresh_rate:
+                self.draw_board()
+
+
+                # Render the iteration text
+                text_surface = font.render(
+                    f"Iteration: {current_iteration + 1}/{self.num_iterations}", 
+                    True, 
+                    (255, 255, 0)
+                )
+                
+                # Draw text on screen at the top-left corner
+                self.screen.blit(text_surface, (10, 10))
+
                 pygame.display.update()  # Only update the display once after all particles are drawn
                 self.num_updates = 0
 
+        pygame.quit()
 
-            
 
 
 # This class is meant to represent a Particle object in our particle system
