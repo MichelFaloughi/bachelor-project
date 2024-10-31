@@ -5,7 +5,7 @@ import numpy as np
 from global_variables import global_possible_directions  # Ensure this file is available
 
 class ParticleSystem:
-    def __init__(self, width: int, height: int, delta: float, mu: float, dot_size: int, 
+    def __init__(self, width: int, height: int, delta: float, mu: float, dot_size: int, num_iterations:int=None, 
                  world_title: str = 'Interactive Particle System', icon_file_path: str = 'kcl.png'):
         
         # Validations
@@ -20,7 +20,13 @@ class ParticleSystem:
         self.delta = delta  # Probability to change direction
         self.mu = mu        # Probability to spawn, also known as density 
         self.dot_size = dot_size
-        self.num_iterations = self.width * self.height ** 2
+
+        if num_iterations is None:
+            self.num_iterations = self.width * self.height ** 2 
+        else:
+            self.num_iterations = num_iterations
+
+
         self.refresh_rate = 8
         self.num_updates = 0
 
@@ -42,6 +48,13 @@ class ParticleSystem:
         # Generate particles
         self.particles = self.generate_random_particles()
         self.num_particles = len(self.particles)
+
+
+        # Deciding the origin
+        self.origin_x = self.width // 2
+        self.origin_y = self.height // 2
+
+
 
     def draw_board(self):
         """Draw all particles on the screen."""
@@ -105,7 +118,17 @@ class ParticleSystem:
                 pygame.display.update()  # Update display with iteration count visible
                 self.num_updates = 0
 
-        pygame.quit()
+        
+        
+        # Game loop
+        running = True
+        while running:
+            # Event handling
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:  # Close the window
+                    running = False
+        
+        # pygame.quit()
 
 
 

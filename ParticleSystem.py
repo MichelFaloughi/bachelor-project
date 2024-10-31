@@ -18,8 +18,9 @@ class ParticleSystem:
         self.dot_size = dot_size
         self.num_iterations = self.width * self.height ** 2
         
-        self.refresh_rate = mu * width * height 
-        # self.refresh_rate = 1
+        # self.refresh_rate = mu * width * height 
+        self.refresh_rate = 8
+
         self.num_updates = 0
 
 
@@ -135,7 +136,7 @@ class ParticleSystem:
                 pygame.display.update()  # Refresh display
                 self.num_updates = 0
 
-        pygame.quit()
+        # pygame.quit()
 
             
 
