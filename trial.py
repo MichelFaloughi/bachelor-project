@@ -59,7 +59,11 @@ class ParticleSystem:
     def draw_board(self):
         """Draw all particles on the screen."""
         for particle in self.particles:
-            particle.draw(self.screen)
+            # Check if particle is at the origin
+            if particle.x == self.origin_x and particle.y == self.origin_y:
+                particle.draw(self.screen, color=(255, 0, 0))  # Draw origin particle in red (or any color)
+            else:
+                particle.draw(self.screen)
 
     def generate_random_particles(self) -> list:
         """Generate particles randomly on the board based on density `mu`."""
@@ -180,9 +184,8 @@ class Particle:
                                                                     self.previous_y * self.size, 
                                                                     self.size, self.size))
 
-    def draw(self, screen):
+    def draw(self, screen, color=(255, 255, 255)):
         """Draw the particle at the current position."""
-        color = (255, 255, 255)  # White color
         pygame.draw.rect(screen, color, pygame.Rect(self.x * self.size,
                                                     self.y * self.size, 
                                                     self.size, self.size))
