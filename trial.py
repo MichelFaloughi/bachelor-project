@@ -123,17 +123,19 @@ class ParticleSystem:
                 self.num_updates = 0
 
         
-        
         # Game loop
-        running = True
-        while running:
-            # Event handling
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:  # Close the window
-                    running = False
+        # running = True
+        # while running:
+        #     # Event handling
+        #     for event in pygame.event.get():
+        #         if event.type == pygame.QUIT:  # Close the window
+        #             running = False
         
-        # pygame.quit()
-
+        
+    def get_user_response(self, user_response):
+        if user_response == 'r' or user_response == 'R':
+            return True
+        return False
 
 
 class Particle:
