@@ -1,21 +1,24 @@
-# from ParticleSystem import ParticleSystem
-from trial import ParticleSystem
+from ParticleSystem import ParticleSystem
+# from trial import ParticleSystem
 import pandas as pd
 
 WORLD_WIDTH = 90 # 200 # 20
 WORLD_HEIGHT = 90 # 200 # 20
-DELTA = 0.1 # probability to move or not to move
-MU = 0.3 # density
+DELTA = 0.001 # 0.01 # 0.1 # probability to move or not to move
+MU = 0.6 # density
 DOT_SIZE = 10 # 4
-NUM_ITERATIONS = 10000
-INIT_REFRESH_RATE = 100
+NUM_ITERATIONS = None # 10000
+INIT_REFRESH_RATE = 10 # 100
 
 running = True
+# num_runs = 10
 total_runs = 0
 df = pd.DataFrame(columns=['Run', 'Cluster Cardinality', 'Radius Manhattan Length', 'Radius Euclidean Length'])
 
+
+
 while running:
-    
+# for _ in range(num_runs):
     total_runs += 1
 
     world = ParticleSystem(
@@ -52,8 +55,5 @@ while running:
 
     running = world.get_user_response(user_input)
     
-
-# Optionally, save the DataFrame to a CSV after all runs
-df.to_csv('simulation_results.csv', index=False)
-print("Simulation results saved to 'simulation_results.csv'")
-
+# Saving results
+df.to_csv('latest_simulation_results.csv', index=False)
