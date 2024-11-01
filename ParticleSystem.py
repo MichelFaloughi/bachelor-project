@@ -7,7 +7,7 @@ import math
 
 class ParticleSystem:
     def __init__(self, width: int, height: int, delta: float, mu: float, dot_size: int, 
-                 num_iterations:int=None, init_refresh_rate:int=8,
+                 num_iterations:int=None, init_refresh_rate:int=8, init_paused_status:bool=False,
                  world_title: str = 'Interactive Particle System', icon_file_path: str = 'kcl.png'):
         
         # Validations
@@ -57,6 +57,8 @@ class ParticleSystem:
         self.origin_x = self.width // 2
         self.origin_y = self.height // 2
 
+        # Initializing pause to false
+        self.paused_status = init_paused_status
 
 
     def draw_board(self):
@@ -83,7 +85,6 @@ class ParticleSystem:
         """Main loop to run the particle system simulation."""
         # Set up font for displaying the iteration count
         font = pygame.font.Font(None, 36)
-        paused = False
 
         for current_iteration in range(self.num_iterations):
             # Event handling
@@ -92,27 +93,17 @@ class ParticleSystem:
                     pygame.quit()
                     return
                 if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_d:  # Increase refresh rate
-                        self.refresh_rate = min(self.refresh_rate * 2, 100)
-                    if event.key == pygame.K_s:  # Decrease refresh rate
-                        self.refresh_rate = max(self.refresh_rate // 2, 1)
-                    if event.key == pygame.K_SPACE:  # Toggle pause state
-                        paused = not paused  # Toggle pause
+                    self.handle_user_key(event.key)
 
-            # If paused, enter a loop that only breaks when SPACE is pressed again
-            while paused:
+            # If self.paused_status is True, enter a loop that only breaks when SPACE is pressed again
+            while self.paused_status:
                 # Check for events to allow unpausing and adjusting refresh rate
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         pygame.quit()
                         return
                     if event.type == pygame.KEYDOWN:
-                        if event.key == pygame.K_SPACE:
-                            paused = False  # Exit the pause loop
-                        elif event.key == pygame.K_d:  # Increase refresh rate
-                            self.refresh_rate = min(self.refresh_rate * 2, 100)
-                        elif event.key == pygame.K_s:  # Decrease refresh rate
-                            self.refresh_rate = max(self.refresh_rate // 2, 1)
+                        self.handle_user_key(event.key)
 
                 # Display pause message
                 text_surface = font.render("Paused - Press SPACE to resume", True, (255, 0, 0))
@@ -149,8 +140,23 @@ class ParticleSystem:
         
     def handle_user_key(self, key):
 
-        return None
+        # Handling pause case
+        if key == pygame.K_SPACE:
+            self.paused_status = not self.paused_status  # Exit the pause loop
 
+        # Handling increasing speed case
+        elif key == pygame.K_d:  # Increase refresh rate
+            if self.refresh_rate > 0:
+                self.refresh_rate = min(self.refresh_rate * 2, 150)
+            else:
+                self.refresh_rate = 1
+        # Handling decreasing speed case
+        elif key == pygame.K_s:  # Decrease refresh rate
+
+            if self.refresh_rate > 0:
+                self.refresh_rate = max(self.refresh_rate // 2, 1)
+            else:
+                self.refresh_rate = 1
 
 
 

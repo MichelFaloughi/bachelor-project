@@ -4,11 +4,12 @@ import pandas as pd
 
 WORLD_WIDTH = 90 # 200 # 20
 WORLD_HEIGHT = 90 # 200 # 20
-DELTA = 0 # 0.001 # 0.01 # 0.1 # probability to move or not to move
+DELTA = 0.1 # 0.001 # 0.01 # 0.1 # probability to move or not to move
 MU = 0.3 # density
 DOT_SIZE = 10 # 4
-NUM_ITERATIONS =  10000 # None # 10000
+NUM_ITERATIONS =  100000 # None # 10000
 INIT_REFRESH_RATE = 10 # 100
+INIT_PAUSED_STATUS = True
 
 running = True
 # num_runs = 10
@@ -30,7 +31,8 @@ while running:
         MU,
         DOT_SIZE,
         NUM_ITERATIONS,
-        INIT_REFRESH_RATE
+        INIT_REFRESH_RATE,
+        INIT_PAUSED_STATUS
     )
 
     world.run_simulation()
