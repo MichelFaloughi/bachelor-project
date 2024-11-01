@@ -7,7 +7,7 @@ WORLD_HEIGHT = 90 # 200 # 20
 DELTA = 0 # 0.001 # 0.01 # 0.1 # probability to move or not to move
 MU = 0.3 # density
 DOT_SIZE = 10 # 4
-NUM_ITERATIONS = None # 10000
+NUM_ITERATIONS =  10000 # None # 10000
 INIT_REFRESH_RATE = 10 # 100
 
 running = True
@@ -54,7 +54,7 @@ while running:
     
     user_input = input('Press R to restart the simulation. Press any other key to stop:  ')
 
-
+    # This will set running to either True or False based on the user's input if they want to re-run or not
     running = world.get_user_response(user_input)
     
 # Saving results

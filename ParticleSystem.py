@@ -99,13 +99,25 @@ class ParticleSystem:
                     if event.key == pygame.K_SPACE:  # Toggle pause state
                         paused = not paused  # Toggle pause
 
-            # Skip updates and rendering if paused
-            if paused:
+            # If paused, enter a loop that only breaks when SPACE is pressed again
+            while paused:
+                # Check for events to allow unpausing and adjusting refresh rate
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
+                        return
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_SPACE:
+                            paused = False  # Exit the pause loop
+                        elif event.key == pygame.K_d:  # Increase refresh rate
+                            self.refresh_rate = min(self.refresh_rate * 2, 100)
+                        elif event.key == pygame.K_s:  # Decrease refresh rate
+                            self.refresh_rate = max(self.refresh_rate // 2, 1)
+
                 # Display pause message
                 text_surface = font.render("Paused - Press SPACE to resume", True, (255, 0, 0))
                 self.screen.blit(text_surface, (10, 50))
-                pygame.display.update()  # Keep pause message on screen
-                continue  # Skip to the next iteration without updating particles
+                pygame.display.update()
 
             # Update particles
             for _ in range(self.refresh_rate):
@@ -125,6 +137,7 @@ class ParticleSystem:
                 pygame.display.update()  # Update display with iteration count visible
                 self.num_updates = 0
 
+
         
         # Game loop
         # running = True
@@ -134,7 +147,13 @@ class ParticleSystem:
         #         if event.type == pygame.QUIT:  # Close the window
         #             running = False
         
-        
+    def handle_user_key(self, key):
+
+        return None
+
+
+
+
     def get_user_response(self, user_response):
         if user_response == 'r' or user_response == 'R':
             return True
