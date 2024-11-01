@@ -1,2 +1,4 @@
 Run,Cluster Cardinality,Radius Manhattan Length,Radius Euclidean Length
-1,0,0,0
+1.0,13.0,4.0,3.1622776601683795
+2.0,108.0,4.0,19.1049731745428
+3.0,111.0,12.0,19.313207915827967

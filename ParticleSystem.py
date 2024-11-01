@@ -94,7 +94,7 @@ class ParticleSystem:
 
             # Event handling
             for event in pygame.event.get():
-                if event.type == pygame.QUIT:
+                if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_e):
                     pygame.quit()
                     return
                 if event.type == pygame.KEYDOWN:
@@ -107,7 +107,7 @@ class ParticleSystem:
 
                 # Check for events to allow unpausing and adjusting refresh rate
                 for event in pygame.event.get():
-                    if event.type == pygame.QUIT:
+                    if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_e):
                         pygame.quit()
                         return
                     if event.type == pygame.KEYDOWN:
@@ -172,6 +172,7 @@ class ParticleSystem:
             else:
                 self.refresh_rate = 1
         
+        # One step forward
         elif key == pygame.K_f:
             
             self.one_step_mode = True
