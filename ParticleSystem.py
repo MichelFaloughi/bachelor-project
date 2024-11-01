@@ -8,6 +8,7 @@ import math
 class ParticleSystem:
     def __init__(self, width: int, height: int, delta: float, mu: float, dot_size: int, 
                  num_iterations:int=None, init_refresh_rate:int=8, init_paused_status:bool=False,
+                 init_one_step_mode:bool=False,
                  world_title: str = 'Interactive Particle System', icon_file_path: str = 'kcl.png'):
         
         # Validations
@@ -60,6 +61,7 @@ class ParticleSystem:
         # Initializing pause to false
         self.paused_status = init_paused_status
 
+        self.one_step_mode = init_one_step_mode
 
     def draw_board(self):
         """Draw all particles on the screen."""
@@ -87,6 +89,9 @@ class ParticleSystem:
         font = pygame.font.Font(None, 36)
 
         for current_iteration in range(self.num_iterations):
+
+
+
             # Event handling
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -97,18 +102,27 @@ class ParticleSystem:
 
             # If self.paused_status is True, enter a loop that only breaks when SPACE is pressed again
             while self.paused_status:
+                
+                self.one_step_mode = False
+
                 # Check for events to allow unpausing and adjusting refresh rate
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         pygame.quit()
                         return
                     if event.type == pygame.KEYDOWN:
-                        self.handle_user_key(event.key)
+                        self.handle_user_key(event.key) # 
 
                 # Display pause message
                 text_surface = font.render("Paused - Press SPACE to resume", True, (255, 0, 0))
                 self.screen.blit(text_surface, (10, 50))
                 pygame.display.update()
+
+
+            # if one step mode is true, make sure to set pause to true so that next iteration we stop
+            if self.one_step_mode:
+                self.paused_status = True
+
 
             # Update particles
             for _ in range(self.refresh_rate):
@@ -157,7 +171,13 @@ class ParticleSystem:
                 self.refresh_rate = max(self.refresh_rate // 2, 1)
             else:
                 self.refresh_rate = 1
-
+        
+        elif key == pygame.K_f:
+            
+            self.one_step_mode = True
+            self.paused_status = False # pause has to be False to allow one loop to happen
+            # the if statement below the pause while loop will set it back to paused
+            
 
 
     def get_user_response(self, user_response):
