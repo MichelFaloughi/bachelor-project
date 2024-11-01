@@ -4,7 +4,7 @@ import pandas as pd
 
 WORLD_WIDTH = 90 # 200 # 20
 WORLD_HEIGHT = 90 # 200 # 20
-DELTA = 0.1 # 0.01 # 0.1 # probability to move or not to move
+DELTA = 0 # 0.001 # 0.01 # 0.1 # probability to move or not to move
 MU = 0.3 # density
 DOT_SIZE = 10 # 4
 NUM_ITERATIONS = None # 10000
@@ -15,7 +15,9 @@ running = True
 total_runs = 0
 df = pd.DataFrame(columns=['Run', 'Cluster Cardinality', 'Radius Manhattan Length', 'Radius Euclidean Length'])
 
-
+##########################################################
+## HIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII ##
+##########################################################
 
 while running:
 # for _ in range(num_runs):

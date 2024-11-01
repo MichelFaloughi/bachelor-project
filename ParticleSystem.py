@@ -30,6 +30,7 @@ class ParticleSystem:
 
 
         self.refresh_rate = init_refresh_rate
+        # self.refresh_rate = 0
         self.num_updates = 0
 
         # Set up the board, particles, and screen
