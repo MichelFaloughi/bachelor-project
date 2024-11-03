@@ -114,7 +114,7 @@ class ParticleSystem:
                         self.handle_user_key(event.key) # 
 
                 # Display pause message
-                text_surface = font.render("Paused - Press SPACE to resume", True, (255, 0, 0))
+                text_surface = font.render("Paused - Press SPACE to resume", True, (0, 0, 255))
                 self.screen.blit(text_surface, (10, 50))
                 pygame.display.update()
 
@@ -178,6 +178,7 @@ class ParticleSystem:
             self.one_step_mode = True
             self.paused_status = False # pause has to be False to allow one loop to happen
             # the if statement below the pause while loop will set it back to paused
+            self.refresh_rate = 1 # or else refresh_rate particles are going to move
             
 
 

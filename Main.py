@@ -9,7 +9,7 @@ MU = 0.3 # density
 DOT_SIZE = 10 # 4
 NUM_ITERATIONS =  100000 # None # 10000
 INIT_REFRESH_RATE = 10 # 100
-INIT_PAUSED_STATUS = True
+INIT_PAUSED_STATUS = False
 
 running = True
 # num_runs = 10
