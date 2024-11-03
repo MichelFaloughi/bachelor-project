@@ -201,7 +201,7 @@ class ParticleSystem:
         # Define directions for all 8 possible neighbors
         directions = [
             (1, 0), (-1, 0), (0, 1), (0, -1),  # N, S, E, W
-            (1, 1), (-1, -1), (1, -1), (-1, 1)  # NE, NW, SE, SW
+            # (1, 1), (-1, -1), (1, -1), (-1, 1)  # NE, NW, SE, SW
         ]
 
         # Perform BFS or DFS to find all connected particles
@@ -232,12 +232,12 @@ class ParticleSystem:
         # Initialize queue for BFS
         queue = [(self.origin_x, self.origin_y)]
         visited = set(queue)  # To keep track of visited positions
-        max_radius = 0
+        max_radius = 1
 
         # Define directions for all 8 possible neighbors
         directions = [
             (1, 0), (-1, 0), (0, 1), (0, -1),  # N, S, E, W
-            (1, 1), (-1, -1), (1, -1), (-1, 1)  # NE, NW, SE, SW
+            # (1, 1), (-1, -1), (1, -1), (-1, 1)  # NE, NW, SE, SW
         ]
 
         # Perform BFS to find all connected particles
@@ -269,7 +269,7 @@ class ParticleSystem:
         # Initialize queue for BFS
         queue = [(self.origin_x, self.origin_y)]
         visited = set(queue)  # To keep track of visited positions
-        max_radius = 0
+        max_radius = 1
 
         # Define directions for all 8 possible neighbors
         directions = [
@@ -331,16 +331,16 @@ class Particle:
 
         if random.random() < delta:  # Change direction randomly
             self.v = random.choice(global_possible_directions)
-        else:
-            # Calculate new position with wrapping around edges
-            new_x = (self.x + self.v[0]) % self.board.shape[0]
-            new_y = (self.y + self.v[1]) % self.board.shape[1]
+        
+        # Calculate new position with wrapping around edges
+        new_x = (self.x + self.v[0]) % self.board.shape[0]
+        new_y = (self.y + self.v[1]) % self.board.shape[1]
 
-            # Move only if new position is empty
-            if self.board[new_x, new_y] == 0:
-                self.board[self.x, self.y] = 0  # Clear old position
-                self.x, self.y = new_x, new_y
-                self.board[self.x, self.y] = 1  # Update board with new position
+        # Move only if new position is empty
+        if self.board[new_x, new_y] == 0:
+            self.board[self.x, self.y] = 0  # Clear old position
+            self.x, self.y = new_x, new_y
+            self.board[self.x, self.y] = 1  # Update board with new position
 
         # Redraw particle
         self.clear_old_position()
