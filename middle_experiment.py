@@ -7,11 +7,13 @@ import math
 
 class ParticleSystem:
     def __init__(self, width: int, height: int, delta: float, mu: float, dot_size: int, 
-                 num_iterations:int=None, init_refresh_rate:int=8,
+                 middle_cluster_size:int=-1,
+                 num_iterations:int=None, init_refresh_rate:int=8, init_paused_status:bool=False,
+                 init_one_step_mode:bool=False,
                  world_title: str = 'Interactive Particle System', icon_file_path: str = 'kcl.png'):
         
         # Validations
-        assert 0 < mu < 1 and 0 < delta < 1
+        assert 0 <= mu <= 1 and 0 <= delta <= 1
 
         # Initialize pygame
         pygame.init()
@@ -22,6 +24,7 @@ class ParticleSystem:
         self.delta = delta  # Probability to change direction
         self.mu = mu        # Probability to spawn, also known as density 
         self.dot_size = dot_size
+        self.middle_cluster_size = middle_cluster_size
 
         if num_iterations is None:
             self.num_iterations = self.width * self.height ** 2 
@@ -30,6 +33,7 @@ class ParticleSystem:
 
 
         self.refresh_rate = init_refresh_rate
+        # self.refresh_rate = 0
         self.num_updates = 0
 
         # Set up the board, particles, and screen
@@ -48,7 +52,7 @@ class ParticleSystem:
             print(f"Warning: Icon file {icon_file_path} not found.")
         
         # Generate particles
-        self.particles = self.generate_random_particles()
+        self.particles = self.generate_middle_cluster()
         self.num_particles = len(self.particles)
 
 
@@ -56,7 +60,10 @@ class ParticleSystem:
         self.origin_x = self.width // 2
         self.origin_y = self.height // 2
 
+        # Initializing pause to false
+        self.paused_status = init_paused_status
 
+        self.one_step_mode = init_one_step_mode
 
     def draw_board(self):
         """Draw all particles on the screen."""
@@ -77,34 +84,69 @@ class ParticleSystem:
                     self.board[x, y] = 1
                     return_list.append(Particle(x, y, v, self.dot_size, self.board, self.screen))
         return return_list
+    
+    def generate_middle_cluster(self) -> list:
+        
+        return_list = []
+        for y in range(self.height):
+            for x in range(self.width):
+                
+
+                self.origin_x = self.width // 2
+                self.origin_y = self.height // 2
+
+                if (abs(y - self.origin_y) <= self.middle_cluster_size and abs(x - self.origin_x) <= self.middle_cluster_size) or random.random() < self.mu:
+                    
+                    v = random.choice(self.possible_directions)
+                    self.board[x, y] = 1
+                    return_list.append(Particle(x, y, v, self.dot_size, self.board, self.screen))
+        
+        
+        return return_list
+    
+
+
 
     def run_simulation(self):
         """Main loop to run the particle system simulation."""
         # Set up font for displaying the iteration count
         font = pygame.font.Font(None, 36)
-        paused = False
 
         for current_iteration in range(self.num_iterations):
+
+
+
             # Event handling
             for event in pygame.event.get():
-                if event.type == pygame.QUIT:
+                if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_e):
                     pygame.quit()
                     return
                 if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_d:  # Increase refresh rate
-                        self.refresh_rate = min(self.refresh_rate * 2, 100)
-                    if event.key == pygame.K_s:  # Decrease refresh rate
-                        self.refresh_rate = max(self.refresh_rate // 2, 1)
-                    if event.key == pygame.K_SPACE:  # Toggle pause state
-                        paused = not paused  # Toggle pause
+                    self.handle_user_key(event.key)
 
-            # Skip updates and rendering if paused
-            if paused:
+            # If self.paused_status is True, enter a loop that only breaks when SPACE is pressed again
+            while self.paused_status:
+                
+                self.one_step_mode = False
+
+                # Check for events to allow unpausing and adjusting refresh rate
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_e):
+                        pygame.quit()
+                        return
+                    if event.type == pygame.KEYDOWN:
+                        self.handle_user_key(event.key) # 
+
                 # Display pause message
-                text_surface = font.render("Paused - Press SPACE to resume", True, (255, 0, 0))
+                text_surface = font.render("Paused - Press SPACE to resume", True, (0, 0, 255))
                 self.screen.blit(text_surface, (10, 50))
-                pygame.display.update()  # Keep pause message on screen
-                continue  # Skip to the next iteration without updating particles
+                pygame.display.update()
+
+
+            # if one step mode is true, make sure to set pause to true so that next iteration we stop
+            if self.one_step_mode:
+                self.paused_status = True
+
 
             # Update particles
             for _ in range(self.refresh_rate):
@@ -124,6 +166,7 @@ class ParticleSystem:
                 pygame.display.update()  # Update display with iteration count visible
                 self.num_updates = 0
 
+
         
         # Game loop
         # running = True
@@ -133,7 +176,36 @@ class ParticleSystem:
         #         if event.type == pygame.QUIT:  # Close the window
         #             running = False
         
+    def handle_user_key(self, key):
+
+        # Handling pause case
+        if key == pygame.K_SPACE:
+            self.paused_status = not self.paused_status  # Exit the pause loop
+
+        # Handling increasing speed case
+        elif key == pygame.K_d:  # Increase refresh rate
+            if self.refresh_rate > 0:
+                self.refresh_rate = min(self.refresh_rate * 2, 150)
+            else:
+                self.refresh_rate = 1
+        # Handling decreasing speed case
+        elif key == pygame.K_s:  # Decrease refresh rate
+
+            if self.refresh_rate > 0:
+                self.refresh_rate = max(self.refresh_rate // 2, 1)
+            else:
+                self.refresh_rate = 1
         
+        # One step forward
+        elif key == pygame.K_f:
+            
+            self.one_step_mode = True
+            self.paused_status = False # pause has to be False to allow one loop to happen
+            # the if statement below the pause while loop will set it back to paused
+            self.refresh_rate = 1 # or else refresh_rate particles are going to move
+            
+
+
     def get_user_response(self, user_response):
         if user_response == 'r' or user_response == 'R':
             return True
@@ -153,7 +225,7 @@ class ParticleSystem:
         # Define directions for all 8 possible neighbors
         directions = [
             (1, 0), (-1, 0), (0, 1), (0, -1),  # N, S, E, W
-            (1, 1), (-1, -1), (1, -1), (-1, 1)  # NE, NW, SE, SW
+            # (1, 1), (-1, -1), (1, -1), (-1, 1)  # NE, NW, SE, SW
         ]
 
         # Perform BFS or DFS to find all connected particles
@@ -184,12 +256,12 @@ class ParticleSystem:
         # Initialize queue for BFS
         queue = [(self.origin_x, self.origin_y)]
         visited = set(queue)  # To keep track of visited positions
-        max_radius = 0
+        max_radius = 1
 
         # Define directions for all 8 possible neighbors
         directions = [
             (1, 0), (-1, 0), (0, 1), (0, -1),  # N, S, E, W
-            (1, 1), (-1, -1), (1, -1), (-1, 1)  # NE, NW, SE, SW
+            # (1, 1), (-1, -1), (1, -1), (-1, 1)  # NE, NW, SE, SW
         ]
 
         # Perform BFS to find all connected particles
@@ -221,7 +293,7 @@ class ParticleSystem:
         # Initialize queue for BFS
         queue = [(self.origin_x, self.origin_y)]
         visited = set(queue)  # To keep track of visited positions
-        max_radius = 0
+        max_radius = 1
 
         # Define directions for all 8 possible neighbors
         directions = [
@@ -283,16 +355,16 @@ class Particle:
 
         if random.random() < delta:  # Change direction randomly
             self.v = random.choice(global_possible_directions)
-        else:
-            # Calculate new position with wrapping around edges
-            new_x = (self.x + self.v[0]) % self.board.shape[0]
-            new_y = (self.y + self.v[1]) % self.board.shape[1]
+        
+        # Calculate new position with wrapping around edges
+        new_x = (self.x + self.v[0]) % self.board.shape[0]
+        new_y = (self.y + self.v[1]) % self.board.shape[1]
 
-            # Move only if new position is empty
-            if self.board[new_x, new_y] == 0:
-                self.board[self.x, self.y] = 0  # Clear old position
-                self.x, self.y = new_x, new_y
-                self.board[self.x, self.y] = 1  # Update board with new position
+        # Move only if new position is empty
+        if self.board[new_x, new_y] == 0:
+            self.board[self.x, self.y] = 0  # Clear old position
+            self.x, self.y = new_x, new_y
+            self.board[self.x, self.y] = 1  # Update board with new position
 
         # Redraw particle
         self.clear_old_position()
