@@ -40,8 +40,9 @@ while running:
         INIT_PAUSED_STATUS
     )
 
-    world.run_simulation()
+    # world.run_simulation()
     # world.run_simulation_calculations_only(render_iterations=True)
+    world.run_simulation_keep_track_of_cluster_size()
 
     curr_radius_euclidean_length = world.get_curr_radius_euclidean_length()
     curr_radius_manhattan_length = world.get_curr_radius_manhattan_length()

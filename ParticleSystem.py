@@ -4,6 +4,8 @@ import random
 import numpy as np
 from global_variables import global_possible_directions  # Ensure this file is available
 import math
+from Particle import Particle
+import pandas as pd
 
 class ParticleSystem:
 
@@ -255,6 +257,74 @@ class ParticleSystem:
                     p = random.choice(self.particles)
                     p.update_particle(self.delta)
                 self.num_updates += 1
+
+
+
+
+    def run_simulation_keep_track_of_cluster_size(self, calculation_interval=10):
+        """Runs the particle simulation while keeping track of cluster size at specified intervals."""
+        
+        records_df = pd.DataFrame(columns=['Iteration', 'Cluster Cardinality'])
+
+        for current_iteration in range(self.num_iterations):
+            
+            # Event handling
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_e):
+                    pygame.quit()
+                    return
+                if event.type == pygame.KEYDOWN:
+                    self.handle_user_key(event.key)
+
+            # If self.paused_status is True, enter a loop that only breaks when SPACE is pressed again
+            while self.paused_status:
+                self.one_step_mode = False
+
+                # Check for events to allow unpausing and adjusting refresh rate
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_e):
+                        pygame.quit()
+                        return
+                    if event.type == pygame.KEYDOWN:
+                        self.handle_user_key(event.key)
+
+            # If one-step mode is enabled, set pause to true to stop at the next iteration
+            if self.one_step_mode:
+                self.paused_status = True
+
+            # Update particles without rendering
+            for _ in range(self.refresh_rate):
+                p = random.choice(self.particles)
+                p.update_particle(self.delta)
+            self.num_updates += 1
+
+            # Record cluster size at specified intervals
+            if current_iteration % calculation_interval == 0 or current_iteration == self.num_iterations - 1:
+                curr_cluster_cardinality = self.get_curr_cluster_cardinality()
+                
+                # Add the record to DataFrame
+                records_df.loc[current_iteration] = [
+                    current_iteration,
+                    curr_cluster_cardinality,
+                ]
+
+        # Save the records to a CSV file
+        records_df.to_csv('latest_run_cluster_records.csv', index=False)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -520,64 +590,3 @@ class ParticleSystem:
 
     #     return max_radius
 
-
-
-
-
-
-
-
-
-class Particle:
-    def __init__(self, x_position: int, y_position: int, velocity_vector: list, dot_size, board, screen):
-        assert len(velocity_vector) == 2, "Velocity vector should have 2 components"
-
-        # Position, velocity, and drawing properties
-        self.x = x_position
-        self.y = y_position
-        self.v = velocity_vector
-        self.size = dot_size
-        self.board = board
-        self.screen = screen
-
-        # Track previous position for clearing
-        self.previous_x = x_position
-        self.previous_y = y_position
-
-        # Place the particle on the board
-        self.board[self.x, self.y] = 1
-
-    def update_particle(self, delta):
-        """Update particle position based on random movement probability `delta`."""
-        # Store the current position as the previous position
-        self.previous_x, self.previous_y = self.x, self.y
-
-        if random.random() < delta:  # Change direction randomly
-            self.v = random.choice(global_possible_directions)
-        
-        # Calculate new position with wrapping around edges
-        new_x = (self.x + self.v[0]) % self.board.shape[0]
-        new_y = (self.y + self.v[1]) % self.board.shape[1]
-
-        # Move only if new position is empty
-        if self.board[new_x, new_y] == 0:
-            self.board[self.x, self.y] = 0  # Clear old position
-            self.x, self.y = new_x, new_y
-            self.board[self.x, self.y] = 1  # Update board with new position
-
-        # Redraw particle
-        self.clear_old_position()
-        self.draw(self.screen)
-
-    def clear_old_position(self):
-        """Clear the previous position by drawing over it with the background color."""
-        background_color = (0, 0, 0)  # Black background
-        pygame.draw.rect(self.screen, background_color, pygame.Rect(self.previous_x * self.size,
-                                                                    self.previous_y * self.size, 
-                                                                    self.size, self.size))
-
-    def draw(self, screen, color=(255, 255, 255)):
-        """Draw the particle at the current position."""
-        pygame.draw.rect(screen, color, pygame.Rect(self.x * self.size,
-                                                    self.y * self.size, 
-                                                    self.size, self.size))
