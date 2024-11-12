@@ -6,6 +6,7 @@ from global_variables import global_possible_directions  # Ensure this file is a
 import math
 
 class ParticleSystem:
+
     def __init__(self, width: int, height: int, delta: float, mu: float, dot_size: int, 
                  middle_cluster_size:int=-1,
                  num_iterations:int=None, init_refresh_rate:int=8, init_paused_status:bool=False,
@@ -114,8 +115,6 @@ class ParticleSystem:
 
         for current_iteration in range(self.num_iterations):
 
-
-
             # Event handling
             for event in pygame.event.get():
                 if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_e):
@@ -167,14 +166,99 @@ class ParticleSystem:
                 self.num_updates = 0
 
 
+
+    def run_simulation_calculations_only(self, render_iterations=False, update_interval=300):
+        """Main loop to run the particle system simulation without rendering for faster calculations."""
+        if render_iterations:
+            print("Rendering is enabled")  # Debug statement
+            # Render code block
+        else:
+            print("Rendering is disabled")  # Debug statement
+            # Calculation-only code block
+
+        if render_iterations:
+
+            font = pygame.font.Font(None, 36)
+
+            for current_iteration in range(self.num_iterations):
+
+                # Event handling
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_e):
+                        pygame.quit()
+                        return
+                    if event.type == pygame.KEYDOWN:
+                        self.handle_user_key(event.key)
+
+                # If self.paused_status is True, enter a loop that only breaks when SPACE is pressed again
+                while self.paused_status:
+                    self.one_step_mode = False
+
+                    # Check for events to allow unpausing and adjusting refresh rate
+                    for event in pygame.event.get():
+                        if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_e):
+                            pygame.quit()
+                            return
+                        if event.type == pygame.KEYDOWN:
+                            self.handle_user_key(event.key)
+
+                # If one-step mode is enabled, set pause to true to stop at the next iteration
+                if self.one_step_mode:
+                    self.paused_status = True
+
+                # Update particles without rendering
+                for _ in range(self.refresh_rate):
+                    p = random.choice(self.particles)
+                    p.update_particle(self.delta)
+                self.num_updates += 1
+
+                
+                # Render iteration count only at specified intervals
+                if current_iteration % update_interval  == 0 or current_iteration == self.num_iterations - 1:
+                # if current_iteration % self.refresh_rate  == 0 or current_iteration == self.num_iterations - 1:
+                
+                    self.screen.fill((0, 0, 0))  # Clear the screen
+                    text_surface = font.render(f"Iteration: {current_iteration + 1}/{self.num_iterations}", True, (255, 255, 255))
+                    self.screen.blit(text_surface, (10, 10))  # Draw the iteration count text
+                    pygame.display.update()  # Update display with iteration count only
         
-        # Game loop
-        # running = True
-        # while running:
-        #     # Event handling
-        #     for event in pygame.event.get():
-        #         if event.type == pygame.QUIT:  # Close the window
-        #             running = False
+        else:
+
+            for current_iteration in range(self.num_iterations):
+
+                # Event handling
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_e):
+                        pygame.quit()
+                        return
+                    if event.type == pygame.KEYDOWN:
+                        self.handle_user_key(event.key)
+
+                # If self.paused_status is True, enter a loop that only breaks when SPACE is pressed again
+                while self.paused_status:
+                    self.one_step_mode = False
+
+                    # Check for events to allow unpausing and adjusting refresh rate
+                    for event in pygame.event.get():
+                        if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_e):
+                            pygame.quit()
+                            return
+                        if event.type == pygame.KEYDOWN:
+                            self.handle_user_key(event.key)
+
+                # If one-step mode is enabled, set pause to true to stop at the next iteration
+                if self.one_step_mode:
+                    self.paused_status = True
+
+                # Update particles without rendering
+                for _ in range(self.refresh_rate):
+                    p = random.choice(self.particles)
+                    p.update_particle(self.delta)
+                self.num_updates += 1
+
+
+
+
         
     def handle_user_key(self, key):
 
@@ -211,24 +295,74 @@ class ParticleSystem:
             return True
         return False
 
+    # def get_curr_cluster_cardinality(self):
+        
+    #     # Check  particle at the origin
+    #     if self.board[self.origin_x, self.origin_y] == 0:
+    #         return 0  
+        
+    #     # Initialize queue for BFS or stack for DFS
+    #     queue = [(self.origin_x, self.origin_y)]
+    #     visited = set(queue)  # To keep track of visited positions
+    #     length = 0
+
+    #     # Define directions for all 8 possible neighbors
+    #     directions = [
+    #         (1, 0), (-1, 0), (0, 1), (0, -1),  # N, S, E, W
+    #         # (1, 1), (-1, -1), (1, -1), (-1, 1)  # NE, NW, SE, SW
+    #     ]
+
+    #     # Perform BFS or DFS to find all connected particles
+    #     while queue:
+    #         x, y = queue.pop(0)  # Use queue.pop() if DFS is preferred
+    #         length += 1  # Count this particle
+
+    #         # Check all adjacent positions
+    #         for dx, dy in directions:
+    #             nx, ny = x + dx, y + dy
+
+    #             # Ensure the neighbor is within bounds
+    #             if 0 <= nx < self.width and 0 <= ny < self.height:
+    #                 # Check if the neighbor has a particle and hasn't been visited
+    #                 if self.board[nx, ny] == 1 and (nx, ny) not in visited:
+    #                     queue.append((nx, ny))
+    #                     visited.add((nx, ny))  # Mark as visited
+
+    #     return length
+    
+
     def get_curr_cluster_cardinality(self):
+        """Calculate the cardinality of the cluster starting from the origin or surrounding cells."""
         
-        # Check  particle at the origin
-        if self.board[self.origin_x, self.origin_y] == 0:
-            return 0  
-        
-        # Initialize queue for BFS or stack for DFS
-        queue = [(self.origin_x, self.origin_y)]
-        visited = set(queue)  # To keep track of visited positions
+        # If the origin has a particle, start the search from the origin
+        if self.board[self.origin_x, self.origin_y] == 1:
+            queue = [(self.origin_x, self.origin_y)]
+        else:
+            # Otherwise, check for particles in the neighboring cells
+            queue = [
+                (self.origin_x + dx, self.origin_y + dy)
+                for dx, dy in [(1, 0), (-1, 0), (0, 1), (0, -1),  # N, S, E, W
+                               (1, 1), (-1, -1), (1, -1), (-1, 1)  # NE, NW, SE, SW
+                                                                    ]  # Adjacent and diagonal cells only
+                if 0 <= self.origin_x + dx < self.width and 0 <= self.origin_y + dy < self.height
+                and self.board[self.origin_x + dx, self.origin_y + dy] == 1
+            ]
+            
+            # If no neighbors have particles, return 0 (no cluster)
+            if not queue:
+                return 0
+
+        # Initialize BFS/DFS
+        visited = set(queue)
         length = 0
 
-        # Define directions for all 8 possible neighbors
+        # Directions for North, South, East, West
         directions = [
             (1, 0), (-1, 0), (0, 1), (0, -1),  # N, S, E, W
             # (1, 1), (-1, -1), (1, -1), (-1, 1)  # NE, NW, SE, SW
         ]
 
-        # Perform BFS or DFS to find all connected particles
+        # Perform BFS/DFS
         while queue:
             x, y = queue.pop(0)  # Use queue.pop() if DFS is preferred
             length += 1  # Count this particle
@@ -245,6 +379,20 @@ class ParticleSystem:
                         visited.add((nx, ny))  # Mark as visited
 
         return length
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     def get_curr_radius_euclidean_length(self):

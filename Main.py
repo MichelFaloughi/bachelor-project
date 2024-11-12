@@ -1,5 +1,5 @@
-# from ParticleSystem import ParticleSystem
-from middle_experiment import ParticleSystem
+from ParticleSystem import ParticleSystem
+# from middle_experiment import ParticleSystem
 import pandas as pd
 
 # saved nice config w,h = 90,90 dot_size = 10
@@ -7,13 +7,13 @@ import pandas as pd
 
 WORLD_WIDTH = 90 # 90 # 200 # 20
 WORLD_HEIGHT = 90 # 90 # 200 # 20
-DELTA = 1 # 0.001 # 0.01 # 0.1 # probability to move or not to move
+DELTA = 0.1 # 0.001 # 0.01 # 0.1 # probability to move or not to move
 MU = 0.4 # density
 DOT_SIZE = 10 # 10 # 4
 MIDDLE_CLUSTER_SIZE = -1 # 10
 NUM_ITERATIONS =  100000 # None # 10000
 INIT_REFRESH_RATE = 10 # 100
-INIT_PAUSED_STATUS = True
+INIT_PAUSED_STATUS = False
 
 running = True
 # num_runs = 10
@@ -41,6 +41,7 @@ while running:
     )
 
     world.run_simulation()
+    # world.run_simulation_calculations_only(render_iterations=True)
 
     curr_radius_euclidean_length = world.get_curr_radius_euclidean_length()
     curr_radius_manhattan_length = world.get_curr_radius_manhattan_length()

@@ -176,33 +176,33 @@ class ParticleSystem:
         #         if event.type == pygame.QUIT:  # Close the window
         #             running = False
         
-    def handle_user_key(self, key):
+        def handle_user_key(self, key):
 
-        # Handling pause case
-        if key == pygame.K_SPACE:
-            self.paused_status = not self.paused_status  # Exit the pause loop
+            # Handling pause case
+            if key == pygame.K_SPACE:
+                self.paused_status = not self.paused_status  # Exit the pause loop
 
-        # Handling increasing speed case
-        elif key == pygame.K_d:  # Increase refresh rate
-            if self.refresh_rate > 0:
-                self.refresh_rate = min(self.refresh_rate * 2, 150)
-            else:
-                self.refresh_rate = 1
-        # Handling decreasing speed case
-        elif key == pygame.K_s:  # Decrease refresh rate
+            # Handling increasing speed case
+            elif key == pygame.K_d:  # Increase refresh rate
+                if self.refresh_rate > 0:
+                    self.refresh_rate = min(self.refresh_rate * 2, 150)
+                else:
+                    self.refresh_rate = 1
+            # Handling decreasing speed case
+            elif key == pygame.K_s:  # Decrease refresh rate
 
-            if self.refresh_rate > 0:
-                self.refresh_rate = max(self.refresh_rate // 2, 1)
-            else:
-                self.refresh_rate = 1
-        
-        # One step forward
-        elif key == pygame.K_f:
+                if self.refresh_rate > 0:
+                    self.refresh_rate = max(self.refresh_rate // 2, 1)
+                else:
+                    self.refresh_rate = 1
             
-            self.one_step_mode = True
-            self.paused_status = False # pause has to be False to allow one loop to happen
-            # the if statement below the pause while loop will set it back to paused
-            self.refresh_rate = 1 # or else refresh_rate particles are going to move
+            # One step forward
+            elif key == pygame.K_f:
+                
+                self.one_step_mode = True
+                self.paused_status = False # pause has to be False to allow one loop to happen
+                # the if statement below the pause while loop will set it back to paused
+                self.refresh_rate = 1 # or else refresh_rate particles are going to move
             
 
 
