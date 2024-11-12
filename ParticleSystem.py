@@ -294,41 +294,6 @@ class ParticleSystem:
         if user_response == 'r' or user_response == 'R':
             return True
         return False
-
-    # def get_curr_cluster_cardinality(self):
-        
-    #     # Check  particle at the origin
-    #     if self.board[self.origin_x, self.origin_y] == 0:
-    #         return 0  
-        
-    #     # Initialize queue for BFS or stack for DFS
-    #     queue = [(self.origin_x, self.origin_y)]
-    #     visited = set(queue)  # To keep track of visited positions
-    #     length = 0
-
-    #     # Define directions for all 8 possible neighbors
-    #     directions = [
-    #         (1, 0), (-1, 0), (0, 1), (0, -1),  # N, S, E, W
-    #         # (1, 1), (-1, -1), (1, -1), (-1, 1)  # NE, NW, SE, SW
-    #     ]
-
-    #     # Perform BFS or DFS to find all connected particles
-    #     while queue:
-    #         x, y = queue.pop(0)  # Use queue.pop() if DFS is preferred
-    #         length += 1  # Count this particle
-
-    #         # Check all adjacent positions
-    #         for dx, dy in directions:
-    #             nx, ny = x + dx, y + dy
-
-    #             # Ensure the neighbor is within bounds
-    #             if 0 <= nx < self.width and 0 <= ny < self.height:
-    #                 # Check if the neighbor has a particle and hasn't been visited
-    #                 if self.board[nx, ny] == 1 and (nx, ny) not in visited:
-    #                     queue.append((nx, ny))
-    #                     visited.add((nx, ny))  # Mark as visited
-
-    #     return length
     
 
     def get_curr_cluster_cardinality(self):
@@ -381,93 +346,179 @@ class ParticleSystem:
         return length
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     def get_curr_radius_euclidean_length(self):
-        """Returns the radius (maximum distance) of the continuous stream of particles starting from the origin."""
-        # Check if there's a particle at the origin
-        if self.board[self.origin_x, self.origin_y] == 0:
-            return 0  # No particle at the origin
-        
-        # Initialize queue for BFS
-        queue = [(self.origin_x, self.origin_y)]
-        visited = set(queue)  # To keep track of visited positions
+        """Returns the Euclidean radius (maximum distance) of the cluster starting from the origin or neighboring cells."""
+        # Initialize the queue based on the origin and neighbors
+        if self.board[self.origin_x, self.origin_y] == 1:
+            queue = [(self.origin_x, self.origin_y)]
+        else:
+            # Add neighboring cells with particles if the origin is empty
+            queue = [
+                (self.origin_x + dx, self.origin_y + dy)
+                for dx, dy in [(1, 0), (-1, 0), (0, 1), (0, -1),  # N, S, E, W
+                            (1, 1), (-1, -1), (1, -1), (-1, 1)]  # NE, NW, SE, SW
+                if 0 <= self.origin_x + dx < self.width and 0 <= self.origin_y + dy < self.height
+                and self.board[self.origin_x + dx, self.origin_y + dy] == 1
+            ]
+            
+            # If no neighbors have particles, return 0 (no cluster)
+            if not queue:
+                return 0
+
+        # Initialize BFS
+        visited = set(queue)
         max_radius = 1
 
-        # Define directions for all 8 possible neighbors
+        # Directions for BFS/DFS
         directions = [
-            (1, 0), (-1, 0), (0, 1), (0, -1),  # N, S, E, W
-            # (1, 1), (-1, -1), (1, -1), (-1, 1)  # NE, NW, SE, SW
+            (1, 0), (-1, 0), (0, 1), (0, -1)  # N, S, E, W
         ]
 
-        # Perform BFS to find all connected particles
+        # Perform BFS to find the maximum Euclidean distance
         while queue:
-            x, y = queue.pop(0)  # Use queue.pop() if DFS is preferred
+            x, y = queue.pop(0)
 
             # Calculate Euclidean distance from the origin
             distance = math.sqrt((x - self.origin_x) ** 2 + (y - self.origin_y) ** 2)
-            max_radius = max(max_radius, distance)  # Update max radius if this is the farthest particle
+            max_radius = max(max_radius, distance)
 
-            # Check all adjacent positions
+            # Explore neighbors
             for dx, dy in directions:
                 nx, ny = x + dx, y + dy
-
-                # Ensure the neighbor is within bounds
                 if 0 <= nx < self.width and 0 <= ny < self.height:
-                    # Check if the neighbor has a particle and hasn't been visited
                     if self.board[nx, ny] == 1 and (nx, ny) not in visited:
                         queue.append((nx, ny))
-                        visited.add((nx, ny))  # Mark as visited
+                        visited.add((nx, ny))
 
         return max_radius
 
-    def get_curr_radius_manhattan_length(self):
 
-        if self.board[self.origin_x, self.origin_y] == 0:
-            return 0  # No particle at the origin
-        
-        # Initialize queue for BFS
-        queue = [(self.origin_x, self.origin_y)]
-        visited = set(queue)  # To keep track of visited positions
+    def get_curr_radius_manhattan_length(self):
+        """Returns the Manhattan radius (maximum distance) of the cluster starting from the origin or neighboring cells."""
+        # Initialize the queue based on the origin and neighbors
+        if self.board[self.origin_x, self.origin_y] == 1:
+            queue = [(self.origin_x, self.origin_y)]
+        else:
+            # Add neighboring cells with particles if the origin is empty
+            queue = [
+                (self.origin_x + dx, self.origin_y + dy)
+                for dx, dy in [(1, 0), (-1, 0), (0, 1), (0, -1),  # N, S, E, W
+                            (1, 1), (-1, -1), (1, -1), (-1, 1)]  # NE, NW, SE, SW
+                if 0 <= self.origin_x + dx < self.width and 0 <= self.origin_y + dy < self.height
+                and self.board[self.origin_x + dx, self.origin_y + dy] == 1
+            ]
+            
+            # If no neighbors have particles, return 0 (no cluster)
+            if not queue:
+                return 0
+
+        # Initialize BFS
+        visited = set(queue)
         max_radius = 1
 
-        # Define directions for all 8 possible neighbors
+        # Directions for BFS/DFS
         directions = [
-            (1, 0), (-1, 0), (0, 1), (0, -1),  # N, S, E, W
+            (1, 0), (-1, 0), (0, 1), (0, -1)  # N, S, E, W
         ]
 
-        # Perform BFS to find all connected particles
+        # Perform BFS to find the maximum Manhattan distance
         while queue:
             x, y = queue.pop(0)
 
             # Calculate Manhattan distance from the origin
             distance = abs(x - self.origin_x) + abs(y - self.origin_y)
-            max_radius = max(max_radius, distance)  # Update max radius if this is the farthest particle
+            max_radius = max(max_radius, distance)
 
-            # Check all adjacent positions
+            # Explore neighbors
             for dx, dy in directions:
                 nx, ny = x + dx, y + dy
-
-                # Ensure the neighbor is within bounds
                 if 0 <= nx < self.width and 0 <= ny < self.height:
-                    # Check if the neighbor has a particle and hasn't been visited
                     if self.board[nx, ny] == 1 and (nx, ny) not in visited:
                         queue.append((nx, ny))
-                        visited.add((nx, ny))  # Mark as visited
+                        visited.add((nx, ny))
 
         return max_radius
+
+
+
+
+
+
+
+
+    # def get_curr_radius_euclidean_length(self):
+    #     """Returns the radius (maximum distance) of the continuous stream of particles starting from the origin."""
+    #     # Check if there's a particle at the origin
+    #     if self.board[self.origin_x, self.origin_y] == 0:
+    #         return 0  # No particle at the origin
+        
+    #     # Initialize queue for BFS
+    #     queue = [(self.origin_x, self.origin_y)]
+    #     visited = set(queue)  # To keep track of visited positions
+    #     max_radius = 1
+
+    #     # Define directions for all 8 possible neighbors
+    #     directions = [
+    #         (1, 0), (-1, 0), (0, 1), (0, -1),  # N, S, E, W
+    #         # (1, 1), (-1, -1), (1, -1), (-1, 1)  # NE, NW, SE, SW
+    #     ]
+
+    #     # Perform BFS to find all connected particles
+    #     while queue:
+    #         x, y = queue.pop(0)  # Use queue.pop() if DFS is preferred
+
+    #         # Calculate Euclidean distance from the origin
+    #         distance = math.sqrt((x - self.origin_x) ** 2 + (y - self.origin_y) ** 2)
+    #         max_radius = max(max_radius, distance)  # Update max radius if this is the farthest particle
+
+    #         # Check all adjacent positions
+    #         for dx, dy in directions:
+    #             nx, ny = x + dx, y + dy
+
+    #             # Ensure the neighbor is within bounds
+    #             if 0 <= nx < self.width and 0 <= ny < self.height:
+    #                 # Check if the neighbor has a particle and hasn't been visited
+    #                 if self.board[nx, ny] == 1 and (nx, ny) not in visited:
+    #                     queue.append((nx, ny))
+    #                     visited.add((nx, ny))  # Mark as visited
+
+    #     return max_radius
+
+    # def get_curr_radius_manhattan_length(self):
+
+    #     if self.board[self.origin_x, self.origin_y] == 0:
+    #         return 0  # No particle at the origin
+        
+    #     # Initialize queue for BFS
+    #     queue = [(self.origin_x, self.origin_y)]
+    #     visited = set(queue)  # To keep track of visited positions
+    #     max_radius = 1
+
+    #     # Define directions for all 8 possible neighbors
+    #     directions = [
+    #         (1, 0), (-1, 0), (0, 1), (0, -1),  # N, S, E, W
+    #     ]
+
+    #     # Perform BFS to find all connected particles
+    #     while queue:
+    #         x, y = queue.pop(0)
+
+    #         # Calculate Manhattan distance from the origin
+    #         distance = abs(x - self.origin_x) + abs(y - self.origin_y)
+    #         max_radius = max(max_radius, distance)  # Update max radius if this is the farthest particle
+
+    #         # Check all adjacent positions
+    #         for dx, dy in directions:
+    #             nx, ny = x + dx, y + dy
+
+    #             # Ensure the neighbor is within bounds
+    #             if 0 <= nx < self.width and 0 <= ny < self.height:
+    #                 # Check if the neighbor has a particle and hasn't been visited
+    #                 if self.board[nx, ny] == 1 and (nx, ny) not in visited:
+    #                     queue.append((nx, ny))
+    #                     visited.add((nx, ny))  # Mark as visited
+
+    #     return max_radius
 
 
 
