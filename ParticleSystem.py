@@ -68,6 +68,15 @@ class ParticleSystem:
 
         self.one_step_mode = init_one_step_mode
 
+
+        # Initializing ring coordinates list
+        self.ring_coordinates_list = self.get_ring_coordinates_list()
+
+
+
+
+
+
     def draw_board(self):
         """Draw all particles on the screen."""
         for particle in self.particles:
@@ -108,7 +117,16 @@ class ParticleSystem:
         return return_list
     
 
+    
+    def get_ring_coordinates_list(self):
 
+        return None 
+
+
+
+    ###################
+    ## Run functions ##
+    ###################
 
     def run_simulation(self):
         """Main loop to run the particle system simulation."""
@@ -166,7 +184,6 @@ class ParticleSystem:
                 
                 pygame.display.update()  # Update display with iteration count visible
                 self.num_updates = 0
-
 
 
     def run_simulation_calculations_only(self, render_iterations=False, update_interval=300):
@@ -258,10 +275,7 @@ class ParticleSystem:
                     p.update_particle(self.delta)
                 self.num_updates += 1
 
-
-
-
-    def run_simulation_keep_track_of_cluster_size(self, calculation_interval=10):
+    def run_simulation_keep_track_of_cluster_size(self, calculation_interval=100):
         """Runs the particle simulation while keeping track of cluster size at specified intervals."""
         
         records_df = pd.DataFrame(columns=['Iteration', 'Cluster Cardinality'])
@@ -327,7 +341,9 @@ class ParticleSystem:
 
 
 
-
+    ###########################
+    ## Handling Interactions ##
+    ###########################
 
         
     def handle_user_key(self, key):
@@ -358,29 +374,47 @@ class ParticleSystem:
             # the if statement below the pause while loop will set it back to paused
             self.refresh_rate = 1 # or else refresh_rate particles are going to move
             
-
-
     def get_user_response(self, user_response):
         if user_response == 'r' or user_response == 'R':
             return True
         return False
     
 
-    def get_curr_cluster_cardinality(self):
+
+
+
+
+
+
+
+    #############################
+    ## Statistics Calculations ##
+    #############################
+
+
+
+    def get_curr_cluster_cardinality(self, start_x=None, start_y=None):
         """Calculate the cardinality of the cluster starting from the origin or surrounding cells."""
+        # This is to make sure the default values are the origin
+        if start_x is None:
+            start_x = self.origin_x
         
+        if start_y is None:
+            start_y = self.origin_y
+
+
         # If the origin has a particle, start the search from the origin
-        if self.board[self.origin_x, self.origin_y] == 1:
-            queue = [(self.origin_x, self.origin_y)]
+        if self.board[start_x, start_y] == 1:
+            queue = [(start_x, start_y)]
         else:
             # Otherwise, check for particles in the neighboring cells
             queue = [
-                (self.origin_x + dx, self.origin_y + dy)
+                (start_x + dx, start_y + dy)
                 for dx, dy in [(1, 0), (-1, 0), (0, 1), (0, -1),  # N, S, E, W
                                (1, 1), (-1, -1), (1, -1), (-1, 1)  # NE, NW, SE, SW
                                                                     ]  # Adjacent and diagonal cells only
-                if 0 <= self.origin_x + dx < self.width and 0 <= self.origin_y + dy < self.height
-                and self.board[self.origin_x + dx, self.origin_y + dy] == 1
+                if 0 <= start_x + dx < self.width and 0 <= start_y + dy < self.height
+                and self.board[start_x + dx, start_y + dy] == 1
             ]
             
             # If no neighbors have particles, return 0 (no cluster)
@@ -511,82 +545,17 @@ class ParticleSystem:
 
 
 
+    # New cluster cardinality that calculates it with the ring thing
+    def get_ring_cluster_cardinality(self):
+
+        cardinalities = []
+
+        for x,y in self.ring_coordinates_list:
+
+            cardinalities.append(self.get_curr_cluster_cardinality(x, y))
+
+        return max(cardinalities)
 
 
 
-
-
-    # def get_curr_radius_euclidean_length(self):
-    #     """Returns the radius (maximum distance) of the continuous stream of particles starting from the origin."""
-    #     # Check if there's a particle at the origin
-    #     if self.board[self.origin_x, self.origin_y] == 0:
-    #         return 0  # No particle at the origin
-        
-    #     # Initialize queue for BFS
-    #     queue = [(self.origin_x, self.origin_y)]
-    #     visited = set(queue)  # To keep track of visited positions
-    #     max_radius = 1
-
-    #     # Define directions for all 8 possible neighbors
-    #     directions = [
-    #         (1, 0), (-1, 0), (0, 1), (0, -1),  # N, S, E, W
-    #         # (1, 1), (-1, -1), (1, -1), (-1, 1)  # NE, NW, SE, SW
-    #     ]
-
-    #     # Perform BFS to find all connected particles
-    #     while queue:
-    #         x, y = queue.pop(0)  # Use queue.pop() if DFS is preferred
-
-    #         # Calculate Euclidean distance from the origin
-    #         distance = math.sqrt((x - self.origin_x) ** 2 + (y - self.origin_y) ** 2)
-    #         max_radius = max(max_radius, distance)  # Update max radius if this is the farthest particle
-
-    #         # Check all adjacent positions
-    #         for dx, dy in directions:
-    #             nx, ny = x + dx, y + dy
-
-    #             # Ensure the neighbor is within bounds
-    #             if 0 <= nx < self.width and 0 <= ny < self.height:
-    #                 # Check if the neighbor has a particle and hasn't been visited
-    #                 if self.board[nx, ny] == 1 and (nx, ny) not in visited:
-    #                     queue.append((nx, ny))
-    #                     visited.add((nx, ny))  # Mark as visited
-
-    #     return max_radius
-
-    # def get_curr_radius_manhattan_length(self):
-
-    #     if self.board[self.origin_x, self.origin_y] == 0:
-    #         return 0  # No particle at the origin
-        
-    #     # Initialize queue for BFS
-    #     queue = [(self.origin_x, self.origin_y)]
-    #     visited = set(queue)  # To keep track of visited positions
-    #     max_radius = 1
-
-    #     # Define directions for all 8 possible neighbors
-    #     directions = [
-    #         (1, 0), (-1, 0), (0, 1), (0, -1),  # N, S, E, W
-    #     ]
-
-    #     # Perform BFS to find all connected particles
-    #     while queue:
-    #         x, y = queue.pop(0)
-
-    #         # Calculate Manhattan distance from the origin
-    #         distance = abs(x - self.origin_x) + abs(y - self.origin_y)
-    #         max_radius = max(max_radius, distance)  # Update max radius if this is the farthest particle
-
-    #         # Check all adjacent positions
-    #         for dx, dy in directions:
-    #             nx, ny = x + dx, y + dy
-
-    #             # Ensure the neighbor is within bounds
-    #             if 0 <= nx < self.width and 0 <= ny < self.height:
-    #                 # Check if the neighbor has a particle and hasn't been visited
-    #                 if self.board[nx, ny] == 1 and (nx, ny) not in visited:
-    #                     queue.append((nx, ny))
-    #                     visited.add((nx, ny))  # Mark as visited
-
-    #     return max_radius
 

@@ -11,7 +11,7 @@ DELTA = 0.1 # 0.001 # 0.01 # 0.1 # probability to move or not to move
 MU = 0.4 # density
 DOT_SIZE = 10 # 10 # 4
 MIDDLE_CLUSTER_SIZE = -1 # 10
-NUM_ITERATIONS =  100000 # None # 10000
+NUM_ITERATIONS =  10000000 # None # 10000
 INIT_REFRESH_RATE = 10 # 100
 INIT_PAUSED_STATUS = False
 
@@ -19,10 +19,6 @@ running = True
 # num_runs = 10
 total_runs = 0
 df = pd.DataFrame(columns=['Run', 'Cluster Cardinality', 'Radius Manhattan Length', 'Radius Euclidean Length'])
-
-##########################################################
-## HIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII ##
-##########################################################
 
 while running:
 # for _ in range(num_runs):
@@ -40,9 +36,9 @@ while running:
         INIT_PAUSED_STATUS
     )
 
-    # world.run_simulation()
+    world.run_simulation()
     # world.run_simulation_calculations_only(render_iterations=True)
-    world.run_simulation_keep_track_of_cluster_size()
+    # world.run_simulation_keep_track_of_cluster_size()
 
     curr_radius_euclidean_length = world.get_curr_radius_euclidean_length()
     curr_radius_manhattan_length = world.get_curr_radius_manhattan_length()
@@ -67,4 +63,4 @@ while running:
     running = world.get_user_response(user_input)
     
 # Saving results
-df.to_csv('latest_simulation_results.csv', index=False)
+# df.to_csv('latest_simulation_results.csv', index=False)
