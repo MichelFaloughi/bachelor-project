@@ -117,10 +117,39 @@ class ParticleSystem:
         return return_list
     
 
-    
+
     def get_ring_coordinates_list(self):
 
-        return None 
+        """
+        Compute the coordinates of the points on the square ring around the origin.
+        The ring has a radius of 5% of self.width (rounded to the nearest integer).
+        Updates self.ring_coordinates_list with these coordinates.
+        """
+        # Calculate the radius as 5% of the width, rounded to the nearest integer
+        radius = max(1, round(self.width * 0.05))  # Ensure radius is at least 1
+
+        # Initialize the list to store the coordinates
+        ring_coordinates = []
+
+        # Calculate the bounds of the square
+        min_x = self.origin_x - radius
+        max_x = self.origin_x + radius
+        min_y = self.origin_y - radius
+        max_y = self.origin_y + radius
+
+        # Iterate over the bounds to capture the ring
+        for x in range(min_x, max_x + 1):
+            for y in range(min_y, max_y + 1):
+                # Add only the points on the edges of the square
+                if (
+                    (x == min_x or x == max_x) or  # Top and bottom edges
+                    (y == min_y or y == max_y)    # Left and right edges
+                ):
+                    # Ensure the coordinates are within bounds
+                    if 0 <= x < self.width and 0 <= y < self.height:
+                        ring_coordinates.append((x, y))
+
+        return ring_coordinates 
 
 
 
@@ -449,7 +478,6 @@ class ParticleSystem:
 
         return length
 
-
     def get_curr_radius_euclidean_length(self):
         """Returns the Euclidean radius (maximum distance) of the cluster starting from the origin or neighboring cells."""
         # Initialize the queue based on the origin and neighbors
@@ -495,7 +523,6 @@ class ParticleSystem:
                         visited.add((nx, ny))
 
         return max_radius
-
 
     def get_curr_radius_manhattan_length(self):
         """Returns the Manhattan radius (maximum distance) of the cluster starting from the origin or neighboring cells."""
@@ -550,8 +577,10 @@ class ParticleSystem:
 
         cardinalities = []
 
-        for x,y in self.ring_coordinates_list:
-
+        for coordinates in self.ring_coordinates_list:
+            
+            x,y  = coordinates
+            
             cardinalities.append(self.get_curr_cluster_cardinality(x, y))
 
         return max(cardinalities)
