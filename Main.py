@@ -9,7 +9,8 @@ WORLD_WIDTH = 300 # 90 # 200 # 20
 WORLD_HEIGHT = 300 # 90 # 200 # 20
 DELTA = 0.0001 # 0.001 # 0.01 # 0.1 # probability to change direction
 MU = 0.4 # density
-EPSILON = 0.9
+EPSILON = 0.9 # probability to not randomly move for one iteration
+
 DOT_SIZE = 3 # 10 # 4
 MIDDLE_CLUSTER_SIZE = -1 # 10
 NUM_ITERATIONS =  10000000 # None # 10000
