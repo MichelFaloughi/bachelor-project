@@ -1,4 +1,4 @@
-# My BSc Mathematics Thesis at King's College London
+# My bachelors Thesis at King's College London
 
 Simulation Study of Interactive Particle Systems for Active Matter
 
