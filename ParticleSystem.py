@@ -9,8 +9,8 @@ import pandas as pd
 
 class ParticleSystem:
 
-    def __init__(self, width: int, height: int, delta: float, mu: float, epsilon: float, dot_size: int, 
-                 middle_cluster_size:int=-1,
+    def __init__(self, width: int, height: int, delta: float, mu: float, epsilon: float, alpha: float,
+                 dot_size: int, middle_cluster_size:int=-1,
                  num_iterations:int=None, init_refresh_rate:int=8, init_paused_status:bool=False,
                  init_one_step_mode:bool=False,
                  world_title: str = 'Interactive Particle System', icon_file_path: str = 'kcl.png'):
@@ -27,6 +27,7 @@ class ParticleSystem:
         self.delta = delta  # Probability to change direction
         self.mu = mu        # Probability to spawn, also known as density 
         self.epsilon = epsilon
+        self.alpha = alpha   # Probability for a particle to be active
         self.dot_size = dot_size
         self.middle_cluster_size = middle_cluster_size
 
@@ -92,27 +93,45 @@ class ParticleSystem:
         return_list = []
         for y in range(self.height):
             for x in range(self.width):
+                
                 if random.random() < self.mu:  # Spawn particle with probability mu
-                    v = random.choice(self.possible_directions)
                     self.board[x, y] = 1
-                    return_list.append(Particle(x, y, v, self.dot_size, self.board, self.screen))
+
+                    if random.random() < self.alpha: # Spawn active particle with probability alpha
+                        active = True
+                        v = random.choice(self.possible_directions)
+                    else: 
+                        active = False
+                        v = None
+
+                    return_list.append(Particle(x, y, v, active, self.dot_size, self.board, self.screen))
+
         return return_list
+    
     
     def generate_middle_cluster(self) -> list:
         
+        # Here all particles are active ?
         return_list = []
         for y in range(self.height):
             for x in range(self.width):
                 
 
-                self.origin_x = self.width // 2
+                self.origin_x = self.width // 2 # maybe this could even be outside the nested for loops, does it change ? 
                 self.origin_y = self.height // 2
 
                 if (abs(y - self.origin_y) <= self.middle_cluster_size and abs(x - self.origin_x) <= self.middle_cluster_size) or random.random() < self.mu:
                     
-                    v = random.choice(self.possible_directions)
                     self.board[x, y] = 1
-                    return_list.append(Particle(x, y, v, self.dot_size, self.board, self.screen))
+                    
+                    if random.random() < self.alpha:
+                        active = True
+                        v = random.choice(self.possible_directions)
+                    else:
+                        active = False
+                        v = None
+
+                    return_list.append(Particle(x, y, v, active, self.dot_size, self.board, self.screen))
         
         
         return return_list
