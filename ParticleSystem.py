@@ -9,7 +9,7 @@ import pandas as pd
 
 class ParticleSystem:
 
-    def __init__(self, width: int, height: int, delta: float, mu: float, dot_size: int, 
+    def __init__(self, width: int, height: int, delta: float, mu: float, epsilon: float, dot_size: int, 
                  middle_cluster_size:int=-1,
                  num_iterations:int=None, init_refresh_rate:int=8, init_paused_status:bool=False,
                  init_one_step_mode:bool=False,
@@ -26,6 +26,7 @@ class ParticleSystem:
         self.height = height
         self.delta = delta  # Probability to change direction
         self.mu = mu        # Probability to spawn, also known as density 
+        self.epsilon = epsilon
         self.dot_size = dot_size
         self.middle_cluster_size = middle_cluster_size
 
@@ -199,7 +200,7 @@ class ParticleSystem:
             # Update particles
             for _ in range(self.refresh_rate):
                 p = random.choice(self.particles)
-                p.update_particle(self.delta)
+                p.update_particle(self.delta, self.epsilon)
             self.num_updates += 1
 
             # Only refresh display at intervals
@@ -217,6 +218,8 @@ class ParticleSystem:
 
     def run_simulation_calculations_only(self, render_iterations=False, update_interval=300):
         """Main loop to run the particle system simulation without rendering for faster calculations."""
+        
+        
         if render_iterations:
             print("Rendering is enabled")  # Debug statement
             # Render code block
@@ -257,7 +260,7 @@ class ParticleSystem:
                 # Update particles without rendering
                 for _ in range(self.refresh_rate):
                     p = random.choice(self.particles)
-                    p.update_particle(self.delta)
+                    p.update_particle(self.delta, self.epsilon)
                 self.num_updates += 1
 
                 
@@ -301,12 +304,20 @@ class ParticleSystem:
                 # Update particles without rendering
                 for _ in range(self.refresh_rate):
                     p = random.choice(self.particles)
-                    p.update_particle(self.delta)
+                    p.update_particle(self.delta, self.epsilon)
                 self.num_updates += 1
 
-    def run_simulation_keep_track_of_cluster_size(self, calculation_interval=100):
+
+    # now this doesn't allow to stop mid way
+    def run_simulation_keep_track_of_cluster_size(self, calculation_interval=100, calculation_method='ring'):
         """Runs the particle simulation while keeping track of cluster size at specified intervals."""
-        
+        # first just set the method
+        if calculation_method == 'ring':
+            cluster_calculation_method = self.get_ring_cluster_cardinality
+        else:
+            cluster_calculation_method = self.get_curr_cluster_cardinality
+
+
         records_df = pd.DataFrame(columns=['Iteration', 'Cluster Cardinality'])
 
         for current_iteration in range(self.num_iterations):
@@ -338,12 +349,12 @@ class ParticleSystem:
             # Update particles without rendering
             for _ in range(self.refresh_rate):
                 p = random.choice(self.particles)
-                p.update_particle(self.delta)
+                p.update_particle(self.delta, self.epsilon)
             self.num_updates += 1
 
             # Record cluster size at specified intervals
             if current_iteration % calculation_interval == 0 or current_iteration == self.num_iterations - 1:
-                curr_cluster_cardinality = self.get_curr_cluster_cardinality()
+                curr_cluster_cardinality = cluster_calculation_method()
                 
                 # Add the record to DataFrame
                 records_df.loc[current_iteration] = [

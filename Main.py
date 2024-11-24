@@ -5,11 +5,12 @@ import pandas as pd
 # saved nice config w,h = 90,90 dot_size = 10
 # 
 
-WORLD_WIDTH = 90 # 90 # 200 # 20
-WORLD_HEIGHT = 90 # 90 # 200 # 20
-DELTA = 0.1 # 0.001 # 0.01 # 0.1 # probability to move or not to move
+WORLD_WIDTH = 300 # 90 # 200 # 20
+WORLD_HEIGHT = 300 # 90 # 200 # 20
+DELTA = 0.0001 # 0.001 # 0.01 # 0.1 # probability to change direction
 MU = 0.4 # density
-DOT_SIZE = 10 # 10 # 4
+EPSILON = 0.9
+DOT_SIZE = 3 # 10 # 4
 MIDDLE_CLUSTER_SIZE = -1 # 10
 NUM_ITERATIONS =  10000000 # None # 10000
 INIT_REFRESH_RATE = 10 # 100
@@ -29,6 +30,7 @@ while running:
         WORLD_HEIGHT,
         DELTA,
         MU,
+        EPSILON, 
         DOT_SIZE,
         MIDDLE_CLUSTER_SIZE,
         NUM_ITERATIONS,
@@ -42,7 +44,9 @@ while running:
 
     curr_radius_euclidean_length = world.get_curr_radius_euclidean_length()
     curr_radius_manhattan_length = world.get_curr_radius_manhattan_length()
-    curr_cluster_cardinality = world.get_curr_cluster_cardinality()
+    
+    # curr_cluster_cardinality = world.get_curr_cluster_cardinality()
+    curr_cluster_cardinality = world.get_ring_cluster_cardinality()
 
     print(f'Total runs: {total_runs}')
     print(f'Current radius Euclidean length: {curr_radius_euclidean_length}')
@@ -63,4 +67,4 @@ while running:
     running = world.get_user_response(user_input)
     
 # Saving results
-# df.to_csv('latest_simulation_results.csv', index=False)
+df.to_csv('latest_simulation_results.csv', index=False)
