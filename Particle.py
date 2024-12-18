@@ -23,8 +23,8 @@ class Particle:
         self.previous_y = y_position
 
         # Place the particle on the board
-        self.board[self.x, self.y] = 1
-
+        # self.board[self.x, self.y] = 1
+        # Don't I already do that ?
 
 
 

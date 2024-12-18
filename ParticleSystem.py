@@ -48,6 +48,9 @@ class ParticleSystem:
         # Set up display
         self.screen = pygame.display.set_mode((self.width * self.dot_size, self.height * self.dot_size))
         pygame.display.set_caption(world_title)
+
+        # Say if you want the world to be rendered or not (affects run_simulation)
+        self.is_rendering = True # user can change by pressing R
         
         # Load the icon
         try:
@@ -222,17 +225,23 @@ class ParticleSystem:
                 p.update_particle(self.delta, self.epsilon)
             self.num_updates += 1
 
-            # Only refresh display at intervals
-            if self.num_updates >= self.refresh_rate:
-                self.screen.fill((0, 0, 0))  # Clear the screen
-                self.draw_board()  # Draw particles
-                
-                # Draw the iteration text last
-                text_surface = font.render(f"Iteration: {current_iteration + 1}/{self.num_iterations}", True, (255, 0, 0))
-                self.screen.blit(text_surface, (10, 10))  # Draw iteration count on top
-                
-                pygame.display.update()  # Update display with iteration count visible
-                self.num_updates = 0
+
+            # Only render world if we want to
+            if self.is_rendering:
+
+                # Only refresh display at intervals
+                if self.num_updates >= self.refresh_rate:
+                    self.screen.fill((0, 0, 0))  # Clear the screen
+                    self.draw_board()  # Draw particles
+                    
+                    # Draw the iteration text last
+                    text_surface = font.render(f"Iteration: {current_iteration + 1}/{self.num_iterations}", True, (255, 0, 0))
+                    self.screen.blit(text_surface, (10, 10))  # Draw iteration count on top
+                    
+                    pygame.display.update()  # Update display with iteration count visible
+                    self.num_updates = 0
+            
+            # I can keep the counter but not the world if you want, up to you prof Stauffer
 
 
     def run_simulation_calculations_only(self, render_iterations=False, update_interval=300):
@@ -432,6 +441,10 @@ class ParticleSystem:
             self.paused_status = False # pause has to be False to allow one loop to happen
             # the if statement below the pause while loop will set it back to paused
             self.refresh_rate = 1 # or else refresh_rate particles are going to move
+        
+        elif key == pygame.K_r:
+            self.is_rendering = not self.is_rendering
+
             
     def get_user_response(self, user_response):
         if user_response == 'r' or user_response == 'R':
