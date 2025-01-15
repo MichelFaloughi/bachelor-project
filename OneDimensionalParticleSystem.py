@@ -98,30 +98,80 @@ class OneDimensionalParticleSystem:
         row = np.zeros(self.screen_width)
     
         for i in range(self.screen_width):
-            row[i] = 
+            start_index = int(i * self.L)      # int because self.L might not be an integer
+            end_index = int((i + 1) * self.L)
+
+            # Calculate the proportion of particles (1s) in the range
+            segment = self.positions_array[start_index:end_index]
+            row[i] = np.sum(segment) / self.L
 
 
+            assert abs(len(segment) - self.L) < 5, 'sum wrong 3abbes'
 
-
+        return row
 
 
 
     # takes a new_row from the above method and appends it the the chm, and removes the last one
     # i can pop because chm is a list of np arrays (a matrix basically)
     def update_color_history_matrix(self, new_row):
-        return None
+        self.color_history_matrix.pop(0) # remove the top (oldest row)
+        self.color_history_matrix.append(new_row) # add the newest to the bottom
+
+    # This is the color system
+    def get_rgb_tuple_from_fraction(self, fraction):
+        assert 0 <= fraction <= 1, "Fraction must be between 0 and 1 inclusive."
+
+        if fraction <= 0.33:  # Black to Red
+            red = int((fraction / 0.33) * 255)
+            green = 0
+            blue = 0
+        elif fraction <= 0.66:  # Red to Orange
+            red = 255
+            green = int(((fraction - 0.33) / 0.33) * 165)  # Orange's green component
+            blue = 0
+        else:  # Orange to Yellow
+            red = 255
+            green = 165 + int(((fraction - 0.66) / 0.34) * (255 - 165))
+            blue = 0
+        
+        # # Interpolate between black (0, 0, 0) and red (255, 0, 0)
+        # red = int(fraction * 255)
+        # green = 0
+        # blue = 0
+
+        return (red, green, blue)
 
     # does what the name suggests
     def draw_color_history_matrix(self):
 
-        return None
+        for row_index, row in enumerate(self.color_history_matrix):
+            for col_index, fraction in enumerate(row):
+                # Determine the color for this cell
+                color = self.get_rgb_tuple_from_fraction(fraction)
+
+                # Calculate the rectangle's position and size
+                x = col_index * self.dot_size
+                y = row_index * self.dot_size
+                rect = pygame.Rect(x, y, self.dot_size, self.dot_size)
+
+                # Draw the rectangle
+                pygame.draw.rect(self.screen, color, rect)
+
+
+
+    ############################
+    ## Running the Simulation ##
+    ############################
+    ############################
+
 
     def run_simulation(self):
         font = pygame.font.Font(None, 36)
 
         for current_iteration in range(self.num_iterations):
 
-            # Event handling, keys pressed and ending game
+            # Event handling, keys pressed, and ending game
             for event in pygame.event.get():
                 if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_e):
                     pygame.quit()
@@ -131,8 +181,6 @@ class OneDimensionalParticleSystem:
             
             # Pause case
             while self.paused_status:
-                
-                # Same as before
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_e):
                         pygame.quit()
@@ -142,29 +190,31 @@ class OneDimensionalParticleSystem:
                 # Display pause message
                 text_surface = font.render("Paused - Press SPACE to resume", True, (0, 0, 255))
                 self.screen.blit(text_surface, (10, 50))
-                pygame.display.update() 
+                pygame.display.update()
 
             # Update particles
             for _ in range(self.refresh_rate):
-                p = random.choice(self.particles) # pick a particle uniformly at random
-                p.update_particle(self.delta)     # then update it
+                p = random.choice(self.particles)  # Pick a particle uniformly at random
+                p.update_particle(self.delta)  # Update it, basically i am just updating the positons array
             self.num_updates += 1
 
             # Only refresh display at intervals
             if self.num_updates >= self.refresh_rate:
                 self.screen.fill((0, 0, 0))  # Clear the screen
-                # self.draw_positions_array()  # Draw particles         APPARENTLY USELESS, LET'S SEE
-                
-                # make sure to update color_history matrix before i draw it
 
+                # Generate a new row for the color history matrix
+                new_row = self.get_color_row_from_positions_array()
+                self.update_color_history_matrix(new_row)
+
+                # Draw the updated color history matrix
                 self.draw_color_history_matrix()
-                
+
                 # Draw the iteration text last
                 text_surface = font.render(f"Iteration: {current_iteration + 1}/{self.num_iterations}", True, (255, 0, 0))
                 self.screen.blit(text_surface, (10, 10))  # Draw iteration count on top
                 
                 pygame.display.update()  # Update display with iteration count visible
-                self.num_updates = 0     # reset self.num_updates back to 0
+                self.num_updates = 0  # Reset self.num_updates back to 0
 
 
 
