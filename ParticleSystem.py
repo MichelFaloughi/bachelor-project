@@ -111,7 +111,6 @@ class ParticleSystem:
 
         return return_list
     
-    
     def generate_middle_cluster(self) -> list:
         
         # Here all particles are active ?
@@ -139,8 +138,6 @@ class ParticleSystem:
         
         return return_list
     
-
-
     def get_ring_coordinates_list(self):
 
         """
@@ -442,6 +439,7 @@ class ParticleSystem:
             # the if statement below the pause while loop will set it back to paused
             self.refresh_rate = 1 # or else refresh_rate particles are going to move
         
+        # Handling the rendering vs not rendering case
         elif key == pygame.K_r:
             self.is_rendering = not self.is_rendering
 

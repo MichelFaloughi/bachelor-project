@@ -3,10 +3,11 @@ from OneDimensionalParticleSystem import OneDimensionalParticleSystem
 import pandas as pd
 
 WORLD_N = 300000
-SCREEN_WIDTH = 900
-SCREEN_HEIGHT = 1000
+SCREEN_WIDTH = 90
+SCREEN_HEIGHT = 90
 MU = 0.4
-DOT_SIZE = 3
+DELTA = 0.1
+DOT_SIZE = 10
 NUM_ITERATIONS = 100000
 INIT_REFRESH_RATE = 10
 INIT_PAUSED_STATUS = False
@@ -19,6 +20,7 @@ while running:
         SCREEN_WIDTH,
         SCREEN_HEIGHT,
         MU,
+        DELTA,
         DOT_SIZE,
         NUM_ITERATIONS,
         INIT_REFRESH_RATE,
@@ -26,3 +28,4 @@ while running:
     )
 
     world.run_simulation()
+    running = False
