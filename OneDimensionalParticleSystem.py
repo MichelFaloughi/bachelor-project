@@ -20,8 +20,9 @@ from OneDimensionalParticle import OneDimensionalParticle
 class OneDimensionalParticleSystem:
 
     def __init__(self, N:int, screen_width:int, screen_height:int, mu:float, delta:float,
+                 epsilon:float, alpha:float,
                  dot_size:int, num_iterations:int, init_refresh_rate:int=8, 
-                 init_paused_status:bool=False, 
+                 init_paused_status:bool=False, is_rendering:bool=True,
                  world_title: str = 'One-Dimensional Interactive Particle System',
                  icon_file_path: str = 'kcl.png' ):
         # Checkers
@@ -35,9 +36,12 @@ class OneDimensionalParticleSystem:
         self.screen_height = screen_height
         self.mu = mu # density, or Probability to spawn
         self.delta = delta # Probability to change direction
+        self.epsilon = epsilon
+        self.alpha = alpha   # Probability for a particle to be active
         self.dot_size = dot_size
         self.refresh_rate = init_refresh_rate
         self.paused_status = init_paused_status
+        self.is_rendering = is_rendering
 
         if num_iterations is None:
             self.num_iterations = self.screen_width ** 3 
@@ -80,7 +84,12 @@ class OneDimensionalParticleSystem:
                 self.positions_array[x] = 1
                 v = random.choice(self.possible_directions) # choose Particle's velocity (direction)
 
-                return_list.append(OneDimensionalParticle(x, v, self.dot_size, self.positions_array, self.screen))
+                if random.random() < self.alpha: # proba to be active 
+                    active = True
+                else:
+                    active = False
+
+                return_list.append(OneDimensionalParticle(x, v, active, self.dot_size, self.positions_array, self.screen))
 
         return return_list
 
@@ -122,19 +131,38 @@ class OneDimensionalParticleSystem:
     def get_rgb_tuple_from_fraction(self, fraction):
         assert 0 <= fraction <= 1, "Fraction must be between 0 and 1 inclusive."
 
-        if fraction <= 0.33:  # Black to Red
-            red = int((fraction / 0.33) * 255)
+        if fraction <= 0.2:  # Black to Blue
+            red = 0
             green = 0
+            blue = int((fraction / 0.2) * 255)
+        elif fraction <= 0.4:  # Blue to Green
+            red = 0
+            green = int(((fraction - 0.2) / 0.2) * 255)
+            blue = 255 - green
+        elif fraction <= 0.6:  # Green to Yellow
+            red = int(((fraction - 0.4) / 0.2) * 255)
+            green = 255
             blue = 0
-        elif fraction <= 0.66:  # Red to Orange
+        elif fraction <= 0.8:  # Yellow to Red
             red = 255
-            green = int(((fraction - 0.33) / 0.33) * 165)  # Orange's green component
+            green = 255 - int(((fraction - 0.6) / 0.2) * 255)
             blue = 0
-        else:  # Orange to Yellow
+        else:  # Red to White
             red = 255
-            green = 165 + int(((fraction - 0.66) / 0.34) * (255 - 165))
-            blue = 0
+            green = int(((fraction - 0.8) / 0.2) * 255)
+            blue = green
         
+        # Fraction	     Color
+        # 0.0	      (0, 0, 0)
+        # 0.2	      (0, 0, 255)
+        # 0.4	      (0, 255, 0)
+        # 0.6	      (255, 255, 0)
+        # 0.8	      (255, 0, 0)
+        # 1.0	      (255, 255, 255)
+
+
+
+
         # # Interpolate between black (0, 0, 0) and red (255, 0, 0)
         # red = int(fraction * 255)
         # green = 0
@@ -162,7 +190,6 @@ class OneDimensionalParticleSystem:
 
     ############################
     ## Running the Simulation ##
-    ############################
     ############################
 
 
@@ -195,26 +222,28 @@ class OneDimensionalParticleSystem:
             # Update particles
             for _ in range(self.refresh_rate):
                 p = random.choice(self.particles)  # Pick a particle uniformly at random
-                p.update_particle(self.delta)  # Update it, basically i am just updating the positons array
+                p.update_particle(self.delta, self.epsilon)  # Update it, basically i am just updating the positons array
             self.num_updates += 1
 
-            # Only refresh display at intervals
-            if self.num_updates >= self.refresh_rate:
-                self.screen.fill((0, 0, 0))  # Clear the screen
+            if self.is_rendering:
+                    
+                # Only refresh display at intervals
+                if self.num_updates >= self.refresh_rate:
+                    self.screen.fill((0, 0, 0))  # Clear the screen
 
-                # Generate a new row for the color history matrix
-                new_row = self.get_color_row_from_positions_array()
-                self.update_color_history_matrix(new_row)
+                    # Generate a new row for the color history matrix
+                    new_row = self.get_color_row_from_positions_array()
+                    self.update_color_history_matrix(new_row)
 
-                # Draw the updated color history matrix
-                self.draw_color_history_matrix()
+                    # Draw the updated color history matrix
+                    self.draw_color_history_matrix()
 
-                # Draw the iteration text last
-                text_surface = font.render(f"Iteration: {current_iteration + 1}/{self.num_iterations}", True, (255, 0, 0))
-                self.screen.blit(text_surface, (10, 10))  # Draw iteration count on top
-                
-                pygame.display.update()  # Update display with iteration count visible
-                self.num_updates = 0  # Reset self.num_updates back to 0
+                    # Draw the iteration text last
+                    text_surface = font.render(f"Iteration: {current_iteration + 1}/{self.num_iterations}", True, (255, 0, 0))
+                    self.screen.blit(text_surface, (10, 10))  # Draw iteration count on top
+                    
+                    pygame.display.update()  # Update display with iteration count visible
+                    self.num_updates = 0  # Reset self.num_updates back to 0
 
 
 
@@ -241,5 +270,5 @@ class OneDimensionalParticleSystem:
                 self.refresh_rate = 1
 
         # Handling rendering or not
-        # elif key == pygame.K_r:
-        #     self.is_rendering = not self.is_rendering
+        elif key == pygame.K_r:
+            self.is_rendering = not self.is_rendering
