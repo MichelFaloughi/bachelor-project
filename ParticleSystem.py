@@ -43,6 +43,9 @@ class ParticleSystem:
 
         # Set up the board, particles, and screen
         self.board = np.zeros((self.width, self.height), dtype=int)
+        self.coordinates = [(x, y) for x in range(self.board.shape[0]) for y in range(self.board.shape[1])] # useful later in clusteredness
+        # beware there are more efficient ways to get the coordinates if you want
+
         self.possible_directions = global_possible_directions
         
         # Set up display
@@ -239,6 +242,20 @@ class ParticleSystem:
                     self.num_updates = 0
             
             # I can keep the counter but not the world if you want, up to you prof Stauffer
+                    
+                    
+                    # ASSUMING IT WILL ALWAYS CONVERGE TO 1, WHICH MIGHT BE A BAD ASSUMPTION
+                    curr_num_clusters = len(self.get_curr_cluster_sizes())
+                    
+                    if curr_num_clusters == 1: 
+                        pygame.quit()
+                        return current_iteration
+
+
+
+
+
+
 
 
     def run_simulation_calculations_only(self, render_iterations=False, update_interval=300):
@@ -461,17 +478,14 @@ class ParticleSystem:
     ## Statistics Calculations ##
     #############################
 
-
-
-    def get_curr_cluster_cardinality(self, start_x=None, start_y=None):
+    def get_curr_cluster_cardinality(self, start_x=None, start_y=None, also_return_visited_nodes: bool = False):
         """Calculate the cardinality of the cluster starting from the origin or surrounding cells."""
         # This is to make sure the default values are the origin
         if start_x is None:
             start_x = self.origin_x
-        
+
         if start_y is None:
             start_y = self.origin_y
-
 
         # If the origin has a particle, start the search from the origin
         if self.board[start_x, start_y] == 1:
@@ -480,32 +494,33 @@ class ParticleSystem:
             # Otherwise, check for particles in the neighboring cells
             queue = [
                 (start_x + dx, start_y + dy)
-                for dx, dy in [(1, 0), (-1, 0), (0, 1), (0, -1),  # N, S, E, W
-                               (1, 1), (-1, -1), (1, -1), (-1, 1)  # NE, NW, SE, SW
-                                                                    ]  # Adjacent and diagonal cells only
+                for dx, dy in [(1, 0), (-1, 0), (0, 1), (0, -1)]  # N, S, E, W
                 if 0 <= start_x + dx < self.width and 0 <= start_y + dy < self.height
                 and self.board[start_x + dx, start_y + dy] == 1
             ]
-            
+
             # If no neighbors have particles, return 0 (no cluster)
             if not queue:
-                return 0
+                if also_return_visited_nodes:
+                    return 0, []  # Return empty visited nodes when requested
+                else:
+                    return 0
 
         # Initialize BFS/DFS
         visited = set(queue)
         length = 0
+        nodes_in_cluster = []
 
         # Directions for North, South, East, West
         directions = [
-            (1, 0), (-1, 0), (0, 1), (0, -1),  # N, S, E, W
-            # (1, 1), (-1, -1), (1, -1), (-1, 1)  # NE, NW, SE, SW
+            (1, 0), (-1, 0), (0, 1), (0, -1)  # N, S, E, W
         ]
 
         # Perform BFS/DFS
         while queue:
             x, y = queue.pop(0)  # Use queue.pop() if DFS is preferred
             length += 1  # Count this particle
-
+            nodes_in_cluster.append((x, y))
             # Check all adjacent positions
             for dx, dy in directions:
                 nx, ny = x + dx, y + dy
@@ -517,7 +532,10 @@ class ParticleSystem:
                         queue.append((nx, ny))
                         visited.add((nx, ny))  # Mark as visited
 
+        if also_return_visited_nodes:
+            return length, nodes_in_cluster
         return length
+
 
     def get_curr_radius_euclidean_length(self):
         """Returns the Euclidean radius (maximum distance) of the cluster starting from the origin or neighboring cells."""
@@ -629,3 +647,28 @@ class ParticleSystem:
 
 
 
+    # returns a list of the size of all clusters of that time
+    def get_curr_cluster_sizes(self, min_component_size:int=20):
+
+        cluster_sizes = [] # to keep track of all clusters sizes, the length of this is num clusters
+        curr_coords = self.coordinates.copy()
+
+        
+        for x, y in self.coordinates:
+            curr_coords.remove((x,y))
+            length, visited_nodes = self.get_curr_cluster_cardinality(start_x=x, start_y=y, also_return_visited_nodes=True)
+            
+            
+            if length >= min_component_size:
+                cluster_sizes.append(length)
+
+        assert curr_coords == [] # make sure we visited all the coordinates
+
+        return cluster_sizes
+
+        # so here I want to compute the number of white connected components bigger than or equal to some threshold
+        # to do so i might want to brush up on the set data structure
+
+        # so i should have a list of all the ppossible coordinates on the board, then loop through them
+        # i can use the get cluster cardinality function already defined above.
+        # 

@@ -1,9 +1,5 @@
 from ParticleSystem import ParticleSystem
-# from middle_experiment import ParticleSystem
 import pandas as pd
-
-# saved nice config w,h = 90,90 dot_size = 10
-# 
 
 WORLD_WIDTH = 300 # 90 # 200 # 20
 WORLD_HEIGHT = 300 # 90 # 200 # 20
@@ -13,17 +9,15 @@ EPSILON = 0.9 # probability to just follow the nomral direction for one iteratio
 ALPHA = 0.8 # probability to be an active (normal) particle
 DOT_SIZE = 3 # 10 # 4
 MIDDLE_CLUSTER_SIZE = -1 # 10
-NUM_ITERATIONS =  10000000 # None # 10000
+NUM_ITERATIONS =  100000000000000000000 # None # 10000
 INIT_REFRESH_RATE = 10 # 100
 INIT_PAUSED_STATUS = False
 
 running = True
-# num_runs = 10
 total_runs = 0
 df = pd.DataFrame(columns=['Run', 'Cluster Cardinality', 'Radius Manhattan Length', 'Radius Euclidean Length'])
 
 while running:
-# for _ in range(num_runs):
     total_runs += 1
 
     world = ParticleSystem(

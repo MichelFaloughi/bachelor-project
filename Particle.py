@@ -96,34 +96,9 @@ class Particle:
 
 
 
-# if I screw up, this is how the update function looked like:
-#     def update_particle(self, delta, epsilon):
-#         """Update particle position based on random movement probability `delta`."""
-#         # Store the current position as the previous position
-#         self.previous_x, self.previous_y = self.x, self.y
-        
-#         if random.random() < delta:  # Change direction randomly
-#             self.v = random.choice(global_possible_directions)
-        
-#         if random.random() < epsilon: # business as usual 
-#             # Calculate new position with wrapping around edges
-#             new_x = (self.x + self.v[0]) % self.board.shape[0]
-#             new_y = (self.y + self.v[1]) % self.board.shape[1]
-#         else: 
-#             # That is not assigned to the particle, its like a temp direction
-#             random_direction = random.choice(global_possible_directions)
-#             new_x = (self.x + random_direction[0]) % self.board.shape[0]
-#             new_y = (self.y + random_direction[1]) % self.board.shape[1]
+class Cluster:
 
+    def __init__(self, points, board):
 
-
-#         # Move only if new position is empty
-#         if self.board[new_x, new_y] == 0:
-#             self.board[self.x, self.y] = 0  # Clear old position
-#             self.x, self.y = new_x, new_y
-#             self.board[self.x, self.y] = 1  # Update board with new position
-
-#         # Redraw particle
-#         self.clear_old_position()
-#         self.draw(self.screen)
-
+        self.points = points # tuples of coordinates
+        self.board = board
