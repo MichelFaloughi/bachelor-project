@@ -5,8 +5,8 @@ import pandas as pd
 WORLD_N = 4500
 SCREEN_WIDTH = 90
 SCREEN_HEIGHT = 90
-MU = 0.4
-DELTA = 0.0001
+MU = 0.6
+DELTA = 0.001
 EPSILON = 0.9 # probability to just follow the nomral direction for one iteration (and not randomly move)
 ALPHA = 0.8 # probability to be an active (normal) particle
 DOT_SIZE = 7

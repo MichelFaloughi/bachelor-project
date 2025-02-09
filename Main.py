@@ -38,24 +38,24 @@ while running:
     # world.run_simulation_calculations_only(render_iterations=True)
     # world.run_simulation_keep_track_of_cluster_size()
 
-    curr_radius_euclidean_length = world.get_curr_radius_euclidean_length()
-    curr_radius_manhattan_length = world.get_curr_radius_manhattan_length()
+    # curr_radius_euclidean_length = world.get_curr_radius_euclidean_length()
+    # curr_radius_manhattan_length = world.get_curr_radius_manhattan_length()
     
-    # curr_cluster_cardinality = world.get_curr_cluster_cardinality()
-    curr_cluster_cardinality = world.get_ring_cluster_cardinality()
+    # # curr_cluster_cardinality = world.get_curr_cluster_cardinality()
+    # curr_cluster_cardinality = world.get_ring_cluster_cardinality()
 
-    print(f'Total runs: {total_runs}')
-    print(f'Current radius Euclidean length: {curr_radius_euclidean_length}')
-    print(f'Current cluster cardinality: {curr_cluster_cardinality}')
-    print(f'Current radius Manhattan length: {curr_radius_manhattan_length}')
+    # print(f'Total runs: {total_runs}')
+    # print(f'Current radius Euclidean length: {curr_radius_euclidean_length}')
+    # print(f'Current cluster cardinality: {curr_cluster_cardinality}')
+    # print(f'Current radius Manhattan length: {curr_radius_manhattan_length}')
 
-    # Update DataFrame with results of this run
-    df.loc[total_runs] = [
-        total_runs,
-        curr_cluster_cardinality,
-        curr_radius_manhattan_length,
-        curr_radius_euclidean_length
-    ]
+    # # Update DataFrame with results of this run
+    # df.loc[total_runs] = [
+    #     total_runs,
+    #     curr_cluster_cardinality,
+    #     curr_radius_manhattan_length,
+    #     curr_radius_euclidean_length
+    # ]
     
     user_input = input('Press R to restart the simulation. Press any other key to stop:  ')
 

@@ -257,7 +257,7 @@ class OneDimensionalParticleSystem:
         # Handling increasing speed case
         elif key == pygame.K_d: # Increase refresh rate
             if self.refresh_rate > 0:
-                self.refresh_rate = min(self.refresh_rate * 2, 150)
+                self.refresh_rate = min(self.refresh_rate * 2, 5000)
             else:
                 self.refresh_rate = 1
         

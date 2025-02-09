@@ -243,13 +243,15 @@ class ParticleSystem:
             
             # I can keep the counter but not the world if you want, up to you prof Stauffer
                     
+
+            if current_iteration >= 10000000 and current_iteration % 100000 == 0: # i.e just get cluster sizes every 1000 iteration
                     
-                    # ASSUMING IT WILL ALWAYS CONVERGE TO 1, WHICH MIGHT BE A BAD ASSUMPTION
-                    curr_num_clusters = len(self.get_curr_cluster_sizes())
-                    
-                    if curr_num_clusters == 1: 
-                        pygame.quit()
-                        return current_iteration
+                # ASSUMING IT WILL ALWAYS CONVERGE TO 1, WHICH MIGHT BE A BAD ASSUMPTION
+                curr_num_clusters = len(self.get_curr_cluster_sizes())
+                
+                if curr_num_clusters == 1: 
+                    pygame.quit()
+                    return current_iteration
 
 
 
