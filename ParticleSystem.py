@@ -94,6 +94,8 @@ class ParticleSystem:
             else:
                 particle.draw(self.screen)
 
+
+
     def generate_random_particles(self) -> list:
         """Generate particles randomly on the board based on density `mu`."""
         return_list = []
@@ -142,7 +144,6 @@ class ParticleSystem:
         return return_list
     
     def get_ring_coordinates_list(self):
-
         """
         Compute the coordinates of the points on the square ring around the origin.
         The ring has a radius of 5% of self.width (rounded to the nearest integer).

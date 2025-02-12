@@ -1,8 +1,8 @@
 from ParticleSystem import ParticleSystem
 import pandas as pd
 
-WORLD_WIDTH = 300 # 90 # 200 # 20
-WORLD_HEIGHT = 300 # 90 # 200 # 20
+WORLD_WIDTH = 90 # 90 # 200 # 20
+WORLD_HEIGHT = 90 # 90 # 200 # 20
 DELTA = 0.0001 # 0.001 # 0.01 # 0.1 # probability to change direction
 MU = 0.4 # density
 EPSILON = 0.9 # probability to just follow the nomral direction for one iteration (and not randomly move)
@@ -14,11 +14,11 @@ INIT_REFRESH_RATE = 10 # 100
 INIT_PAUSED_STATUS = False
 
 running = True
-total_runs = 0
-df = pd.DataFrame(columns=['Run', 'Cluster Cardinality', 'Radius Manhattan Length', 'Radius Euclidean Length'])
+# total_runs = 0
+# df = pd.DataFrame(columns=['Run', 'Cluster Cardinality', 'Radius Manhattan Length', 'Radius Euclidean Length'])
 
 while running:
-    total_runs += 1
+    # total_runs += 1
 
     world = ParticleSystem(
         WORLD_WIDTH,
@@ -63,4 +63,4 @@ while running:
     running = world.get_user_response(user_input)
     
 # Saving results
-df.to_csv('latest_simulation_results.csv', index=False)
+# df.to_csv('latest_simulation_results.csv', index=False)
