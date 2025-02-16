@@ -2,7 +2,7 @@
 import pygame
 import random
 import numpy as np
-from global_variables import global_possible_directions  # Ensure this file is available
+from global_variables import global_possible_directions, global_weights  # Ensure this file is available
 import math
 from Particle import Particle
 import pandas as pd
@@ -38,6 +38,7 @@ class ParticleSystem:
 
 
         self.refresh_rate = init_refresh_rate
+        self.display_run_info = True # run id and iterations, 
         # self.refresh_rate = 0
         self.num_updates = 0
 
@@ -76,14 +77,16 @@ class ParticleSystem:
 
         self.one_step_mode = init_one_step_mode
 
-
         # Initializing ring coordinates list
         self.ring_coordinates_list = self.get_ring_coordinates_list()
 
+        self.id = self.read_and_increment_run_id(2)
 
 
 
-
+    ###################
+    ## Admin methods ##
+    ###################
 
     def draw_board(self):
         """Draw all particles on the screen."""
@@ -107,7 +110,11 @@ class ParticleSystem:
 
                     if random.random() < self.alpha: # Spawn active particle with probability alpha
                         active = True
+
+                        # remember possible_directions should look like this [ [0,1], [1,0], [0,-1], [-1,0] ]
                         v = random.choice(self.possible_directions)
+                        
+
                     else: 
                         active = False
                         v = None
@@ -116,6 +123,8 @@ class ParticleSystem:
 
         return return_list
     
+
+    # When self.middle_cluster_size = -1 , this is the same as generating randim particles
     def generate_middle_cluster(self) -> list:
         
         # Here all particles are active ?
@@ -133,7 +142,12 @@ class ParticleSystem:
                     
                     if random.random() < self.alpha:
                         active = True
-                        v = random.choice(self.possible_directions)
+                        # remember possible_directions should look like this [ [0,1], [1,0], [0,-1], [-1,0] ]
+                        v = random.choices(self.possible_directions,
+                                          weights= global_weights,
+                                                   k=1  # i think num choices
+                                                   )[0]
+                        # v = [1,0]
                     else:
                         active = False
                         v = None
@@ -176,6 +190,33 @@ class ParticleSystem:
         return ring_coordinates 
 
 
+    def read_and_increment_run_id(self, line_number):
+        assert line_number == 2, 'This is for 2D Particle Systems !'
+
+        file_path = "run_ids.txt"
+
+        with open(file_path, "r") as file:
+            lines = file.readlines()
+
+        # Extract the first number from the specified line
+        first_part = lines[line_number - 1].split()[0]  # Extracts '00000001'
+        new_id = int(first_part) + 1  # Increment by 1
+
+        # Format it back to match the original 8-digit format
+        new_id_str = f"{new_id:08d}"  
+
+        # Replace the first number in the line while keeping the rest unchanged
+        lines[line_number - 1] = new_id_str + "   " + " ".join(lines[line_number - 1].split()[1:]) + "\n"
+
+        # Write the updated content back to the file
+        with open(file_path, "w") as file:
+            file.writelines(lines)
+
+        return first_part
+
+
+
+
 
     ###################
     ## Run functions ##
@@ -209,9 +250,11 @@ class ParticleSystem:
                     if event.type == pygame.KEYDOWN:
                         self.handle_user_key(event.key) # 
 
-                # Display pause message
-                text_surface = font.render("Paused - Press SPACE to resume", True, (0, 0, 255))
-                self.screen.blit(text_surface, (10, 50))
+                
+                if self.display_run_info:
+                    # Display pause message
+                    text_surface = font.render("Paused - Press SPACE to resume", True, (0, 0, 255))
+                    self.screen.blit(text_surface, (10, 50))
                 pygame.display.update()
 
 
@@ -235,10 +278,16 @@ class ParticleSystem:
                     self.screen.fill((0, 0, 0))  # Clear the screen
                     self.draw_board()  # Draw particles
                     
-                    # Draw the iteration text last
-                    text_surface = font.render(f"Iteration: {current_iteration + 1}/{self.num_iterations}", True, (255, 0, 0))
-                    self.screen.blit(text_surface, (10, 10))  # Draw iteration count on top
-                    
+                    if self.display_run_info:
+
+                        # Draw the iteration text last
+                        text_surface = font.render(f"Iteration: {current_iteration + 1}/{self.num_iterations}", True, (255, 0, 0))
+                        self.screen.blit(text_surface, (10, 10))  # Draw iteration count on top
+
+                        # Display the ParticleSystem's ID
+                        text_surface = font.render(f"Run ID: {self.id}", True, (0, 255, 0))
+                        self.screen.blit(text_surface, (10, 30))  # Draw iteration count on top
+
                     pygame.display.update()  # Update display with iteration count visible
                     self.num_updates = 0
             
@@ -426,6 +475,20 @@ class ParticleSystem:
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     ###########################
     ## Handling Interactions ##
     ###########################
@@ -463,12 +526,42 @@ class ParticleSystem:
         elif key == pygame.K_r:
             self.is_rendering = not self.is_rendering
 
+        # Handling display of run info, run ID and iteration
+        elif key == pygame.K_i:
+            self.display_run_info = not self.display_run_info
             
     def get_user_response(self, user_response):
         if user_response == 'r' or user_response == 'R':
             return True
         return False
     
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
