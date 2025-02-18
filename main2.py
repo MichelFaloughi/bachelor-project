@@ -38,3 +38,5 @@ while running:
     # This will set running to either True or False based on the user's input if they want to re-run or not
     running = world.get_user_response(user_input)
 
+cluster_sizes = world.get_curr_cluster_sizes()
+

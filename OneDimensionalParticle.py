@@ -3,7 +3,7 @@ import random
 from global_variables import one_dimensional_possible_directions
 
 class OneDimensionalParticle:
-    
+     
     def __init__(self, x:int, v:int, active:bool, dot_size:int, positions_array, screen):
     
         self.x = x

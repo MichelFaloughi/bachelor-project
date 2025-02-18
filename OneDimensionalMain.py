@@ -14,10 +14,10 @@ NUM_ITERATIONS = 1000000000
 INIT_REFRESH_RATE = 1000
 INIT_PAUSED_STATUS = False
 IS_REDENRING = True
-
+INIT_ONE_STEP_MODE = True
 
 running = True
-while running:
+while running: 
 
     world = OneDimensionalParticleSystem(
         WORLD_N,
@@ -31,7 +31,8 @@ while running:
         NUM_ITERATIONS,
         INIT_REFRESH_RATE,
         INIT_PAUSED_STATUS,
-        IS_REDENRING
+        IS_REDENRING,
+        INIT_ONE_STEP_MODE
     )
 
     world.run_simulation()

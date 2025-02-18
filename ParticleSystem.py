@@ -80,7 +80,7 @@ class ParticleSystem:
         # Initializing ring coordinates list
         self.ring_coordinates_list = self.get_ring_coordinates_list()
 
-        self.id = self.read_and_increment_run_id(2)
+        self.id = self.read_and_increment_run_id(2) 
 
 
 
@@ -286,7 +286,7 @@ class ParticleSystem:
 
                         # Display the ParticleSystem's ID
                         text_surface = font.render(f"Run ID: {self.id}", True, (0, 255, 0))
-                        self.screen.blit(text_surface, (10, 30))  # Draw iteration count on top
+                        self.screen.blit(text_surface, (10, 30))  # Draw ID on top
 
                     pygame.display.update()  # Update display with iteration count visible
                     self.num_updates = 0
@@ -506,6 +506,7 @@ class ParticleSystem:
                 self.refresh_rate = min(self.refresh_rate * 2, 150)
             else:
                 self.refresh_rate = 1
+
         # Handling decreasing speed case
         elif key == pygame.K_s:  # Decrease refresh rate
 
@@ -530,6 +531,10 @@ class ParticleSystem:
         elif key == pygame.K_i:
             self.display_run_info = not self.display_run_info
             
+        
+
+
+
     def get_user_response(self, user_response):
         if user_response == 'r' or user_response == 'R':
             return True
@@ -743,24 +748,27 @@ class ParticleSystem:
 
 
 
-    # returns a list of the size of all clusters of that time
-    def get_curr_cluster_sizes(self, min_component_size:int=20):
+    # returns a list of the size of all clusters of that time. len(of this) can tell us the num clusters
+    def get_curr_cluster_sizes(self, min_component_size: int = 20):
+        cluster_sizes = []  # Track all cluster sizes
+        curr_coords = self.coordinates.copy()  # Make a copy
 
-        cluster_sizes = [] # to keep track of all clusters sizes, the length of this is num clusters
-        curr_coords = self.coordinates.copy()
+        while curr_coords:  # Process until all coordinates are visited
+            x, y = curr_coords.pop(0)  # Get first coordinate and remove it
+            length, visited_nodes = self.get_curr_cluster_cardinality(
+                start_x=x, start_y=y, also_return_visited_nodes=True
+            )
+            
+            # Remove visited nodes from curr_coords
+            curr_coords = [coord for coord in curr_coords if coord not in visited_nodes]
 
-        
-        for x, y in self.coordinates:
-            curr_coords.remove((x,y))
-            length, visited_nodes = self.get_curr_cluster_cardinality(start_x=x, start_y=y, also_return_visited_nodes=True)
-            
-            
             if length >= min_component_size:
                 cluster_sizes.append(length)
 
-        assert curr_coords == [] # make sure we visited all the coordinates
+        assert not curr_coords  # Ensure we visited all coordinates
 
         return cluster_sizes
+
 
         # so here I want to compute the number of white connected components bigger than or equal to some threshold
         # to do so i might want to brush up on the set data structure
