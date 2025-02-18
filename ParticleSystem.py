@@ -80,7 +80,7 @@ class ParticleSystem:
         # Initializing ring coordinates list
         self.ring_coordinates_list = self.get_ring_coordinates_list()
 
-        self.id = self.read_and_increment_run_id(2)
+        self.id = self.read_and_increment_run_id(2) 
 
 
 
@@ -286,7 +286,7 @@ class ParticleSystem:
 
                         # Display the ParticleSystem's ID
                         text_surface = font.render(f"Run ID: {self.id}", True, (0, 255, 0))
-                        self.screen.blit(text_surface, (10, 30))  # Draw iteration count on top
+                        self.screen.blit(text_surface, (10, 30))  # Draw ID on top
 
                     pygame.display.update()  # Update display with iteration count visible
                     self.num_updates = 0
@@ -463,8 +463,95 @@ class ParticleSystem:
 
 
 
+    # This is a fucntion that will run until we record the first instance of the world having a single cluster
+    # We will not check at EACH iteration, and there are a lot of optimizations (short circuiting) to have but
+    # for now this is what we have 
+    # This method is made to run alone
+    def run_simulation_get_iteration_of_first_single_cluster(self, check_rate=10000):
+        num_updates_for_cluster_checking = 0
+        self.refresh_rate = 150 # default to make it faster ...
+        self.is_rendering = False
+        
+        # Set up font for displaying the iteration count
+        font = pygame.font.Font(None, 36)
+
+        for current_iteration in range(self.num_iterations):
+
+            # Event handling
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_e):
+                    pygame.quit()
+                    return
+                if event.type == pygame.KEYDOWN:
+                    self.handle_user_key(event.key)
+
+            # If self.paused_status is True, enter a loop that only breaks when SPACE is pressed again
+            while self.paused_status:
+                
+                self.one_step_mode = False
+
+                # Check for events to allow unpausing and adjusting refresh rate
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_e):
+                        pygame.quit()
+                        return
+                    if event.type == pygame.KEYDOWN:
+                        self.handle_user_key(event.key) # 
+
+                
+                if self.display_run_info:
+                    # Display pause message
+                    text_surface = font.render("Paused - Press SPACE to resume", True, (0, 0, 255))
+                    self.screen.blit(text_surface, (10, 50))
+                pygame.display.update()
+
+            # if one step mode is true, make sure to set pause to true so that next iteration we stop
+            if self.one_step_mode:
+                self.paused_status = True
 
 
+            # Update particles
+            for _ in range(self.refresh_rate):
+                p = random.choice(self.particles)
+                p.update_particle(self.delta, self.epsilon)
+            self.num_updates += 1
+            num_updates_for_cluster_checking += 1
+
+
+            # Only render world if we want to
+            if self.is_rendering:
+
+                # Only refresh display at intervals
+                if self.num_updates >= self.refresh_rate:
+                    self.screen.fill((0, 0, 0))  # Clear the screen
+                    self.draw_board()  # Draw particles
+                    
+                    if self.display_run_info:
+
+                        # Draw the iteration text last
+                        text_surface = font.render(f"Iteration: {current_iteration + 1}/{self.num_iterations}", True, (255, 0, 0))
+                        self.screen.blit(text_surface, (10, 10))  # Draw iteration count on top
+
+                        # Display the ParticleSystem's ID
+                        text_surface = font.render(f"Run ID: {self.id}", True, (0, 255, 0))
+                        self.screen.blit(text_surface, (10, 30))  # Draw ID on top
+
+                    pygame.display.update()  # Update display with iteration count visible
+                    self.num_updates = 0
+            
+            # I can keep the counter but not the world if you want, up to you prof Stauffer
+                    
+            # Check when we get one cluster
+            if num_updates_for_cluster_checking >= check_rate: 
+                    
+                # ASSUMING IT WILL ALWAYS CONVERGE TO 1, WHICH MIGHT BE A BAD ASSUMPTION
+                curr_num_clusters = len(self.get_curr_cluster_sizes())
+                
+                if curr_num_clusters == 1 or current_iteration >= 10000000: 
+                    pygame.quit()
+                    return current_iteration
+                
+                num_updates_for_cluster_checking = 0 # reset
 
 
 
@@ -506,6 +593,7 @@ class ParticleSystem:
                 self.refresh_rate = min(self.refresh_rate * 2, 150)
             else:
                 self.refresh_rate = 1
+
         # Handling decreasing speed case
         elif key == pygame.K_s:  # Decrease refresh rate
 
@@ -530,6 +618,10 @@ class ParticleSystem:
         elif key == pygame.K_i:
             self.display_run_info = not self.display_run_info
             
+        
+
+
+
     def get_user_response(self, user_response):
         if user_response == 'r' or user_response == 'R':
             return True
@@ -741,26 +833,75 @@ class ParticleSystem:
         return max(cardinalities)
 
 
+    def get_curr_strict_cluster_cardinality(self, start_x=None, start_y=None, also_return_visited_nodes: bool = False):
+        """Calculate the cardinality of the cluster starting from the origin or surrounding cells."""
+        # This is to make sure the default values are the origin
+        if start_x is None:
+            start_x = self.origin_x
+
+        if start_y is None:
+            start_y = self.origin_y
+
+        # If the origin has a particle, start the search from the origin
+        if self.board[start_x, start_y] == 1:
+            queue = [(start_x, start_y)]
+        else:
+            if also_return_visited_nodes:
+                return 0, []
+            return 0
+
+        # Initialize BFS/DFS
+        visited = set(queue)
+        length = 0
+        nodes_in_cluster = []
+
+        # Directions for North, South, East, West
+        directions = [
+            (1, 0), (-1, 0), (0, 1), (0, -1)  # N, S, E, W
+        ]
+
+        # Perform BFS/DFS
+        while queue:
+            x, y = queue.pop(0)  # Use queue.pop() if DFS is preferred
+            length += 1  # Count this particle
+            nodes_in_cluster.append((x, y))
+            # Check all adjacent positions
+            for dx, dy in directions:
+                nx, ny = x + dx, y + dy
+
+                # Ensure the neighbor is within bounds
+                if 0 <= nx < self.width and 0 <= ny < self.height:
+                    # Check if the neighbor has a particle and hasn't been visited
+                    if self.board[nx, ny] == 1 and (nx, ny) not in visited:
+                        queue.append((nx, ny))
+                        visited.add((nx, ny))  # Mark as visited
+
+        if also_return_visited_nodes:
+            return length, nodes_in_cluster
+        return length
 
 
-    # returns a list of the size of all clusters of that time
-    def get_curr_cluster_sizes(self, min_component_size:int=20):
+    # returns a list of the size of all cmlusters of that time. len(of this) can tell us the num clusters
+    def get_curr_cluster_sizes(self, min_component_size: int = 20):
+        cluster_sizes = []  # Track all cluster sizes
+        curr_coords = self.coordinates.copy()  # Make a copy
 
-        cluster_sizes = [] # to keep track of all clusters sizes, the length of this is num clusters
-        curr_coords = self.coordinates.copy()
-
-        
-        for x, y in self.coordinates:
-            curr_coords.remove((x,y))
-            length, visited_nodes = self.get_curr_cluster_cardinality(start_x=x, start_y=y, also_return_visited_nodes=True)
+        while curr_coords:  # Process until all coordinates are visited
+            x, y = curr_coords.pop(0)  # Get first coordinate and remove it
+            length, visited_nodes = self.get_curr_strict_cluster_cardinality(
+                start_x=x, start_y=y, also_return_visited_nodes=True
+            )
             
-            
+            # Remove visited nodes from curr_coords
+            curr_coords = [coord for coord in curr_coords if coord not in visited_nodes]
+
             if length >= min_component_size:
                 cluster_sizes.append(length)
 
-        assert curr_coords == [] # make sure we visited all the coordinates
+        assert not curr_coords  # Ensure we visited all coordinates
 
         return cluster_sizes
+
 
         # so here I want to compute the number of white connected components bigger than or equal to some threshold
         # to do so i might want to brush up on the set data structure

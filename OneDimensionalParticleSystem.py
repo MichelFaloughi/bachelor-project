@@ -18,11 +18,12 @@ from OneDimensionalParticle import OneDimensionalParticle
 
 # self.positions_array is length N or screen_width
 class OneDimensionalParticleSystem:
-
+ 
     def __init__(self, N:int, screen_width:int, screen_height:int, mu:float, delta:float,
                  epsilon:float, alpha:float,
                  dot_size:int, num_iterations:int, init_refresh_rate:int=8, 
                  init_paused_status:bool=False, is_rendering:bool=True,
+                 init_one_step_mode:bool=False,
                  world_title: str = 'One-Dimensional Interactive Particle System',
                  icon_file_path: str = 'kcl.png' ):
         # Checkers
@@ -42,6 +43,7 @@ class OneDimensionalParticleSystem:
         self.refresh_rate = init_refresh_rate
         self.paused_status = init_paused_status
         self.is_rendering = is_rendering
+        self.one_step_mode = init_one_step_mode
 
         if num_iterations is None:
             self.num_iterations = self.screen_width ** 3 
@@ -71,6 +73,7 @@ class OneDimensionalParticleSystem:
         self.icon = pygame.image.load(icon_file_path)
         pygame.display.set_icon(self.icon)
 
+        self.display_run_info = True
 
         self.particles = self.generate_random_particles()
         self.num_particles = len(self.particles)
@@ -201,6 +204,11 @@ class OneDimensionalParticleSystem:
         for row_index, row in enumerate(self.color_history_matrix):
             for col_index, fraction in enumerate(row):
                 # Determine the color for this cell
+                
+                # DEBUGGING:
+                print('Fraction: ', fraction)
+
+
                 color = self.get_rgb_tuple_from_fraction(fraction)
 
                 # Calculate the rectangle's position and size
@@ -254,16 +262,24 @@ class OneDimensionalParticleSystem:
             
             # Pause case
             while self.paused_status:
+
+                self.one_step_mode = False
+                
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_e):
                         pygame.quit()
                         return
                     if event.type == pygame.KEYDOWN:
                         self.handle_user_key(event.key)
-                # Display pause message
-                text_surface = font.render("Paused - Press SPACE to resume", True, (0, 0, 255))
-                self.screen.blit(text_surface, (10, 50))
+
+                if self.display_run_info:
+                    # Display pause message
+                    text_surface = font.render("Paused - Press SPACE to resume", True, (0, 0, 255))
+                    self.screen.blit(text_surface, (10, 50))
                 pygame.display.update()
+
+            if self.one_step_mode:
+                self.paused_status = True
 
             # Update particles
             for _ in range(self.refresh_rate):
@@ -284,9 +300,14 @@ class OneDimensionalParticleSystem:
                     # Draw the updated color history matrix
                     self.draw_color_history_matrix()
 
-                    # Draw the iteration text last
-                    text_surface = font.render(f"Iteration: {current_iteration + 1}/{self.num_iterations}", True, (255, 0, 0))
-                    self.screen.blit(text_surface, (10, 10))  # Draw iteration count on top
+                    if self.display_run_info:
+                        # Draw the iteration text last
+                        text_surface = font.render(f"Iteration: {current_iteration + 1}/{self.num_iterations}", True, (255, 0, 0))
+                        self.screen.blit(text_surface, (10, 10))  # Draw iteration count on top
+                        
+                        # Display the ParticleSystem's ID
+                        text_surface = font.render(f"Run ID: {self.id}", True, (0, 255, 0))
+                        self.screen.blit(text_surface, (10, 30))  # Draw ID on top
                     
                     pygame.display.update()  # Update display with iteration count visible
                     self.num_updates = 0  # Reset self.num_updates back to 0
@@ -342,32 +363,15 @@ class OneDimensionalParticleSystem:
                 self.refresh_rate = max(self.refresh_rate // 2, 1)
             else:
                 self.refresh_rate = 1
+        
+        # One step forward
+        elif key == pygame.K_f:
+            
+            self.one_step_mode = True
+            self.paused_status = False # pause has to be False to allow one loop to happen
+            # the if statement below the pause while loop will set it back to paused
+            self.refresh_rate = 1 # or else refresh_rate particles are going to move
 
         # Handling rendering or not
         elif key == pygame.K_r:
             self.is_rendering = not self.is_rendering
-
-
-    def read_and_increment_run_id(self, line_number):
-        assert line_number == 1, 'This is for 1D Particle Systems !'
-
-        file_path = "run_ids.txt"
-
-        with open(file_path, "r") as file:
-            lines = file.readlines()
-
-        # Extract the first number from the specified line
-        first_part = lines[line_number - 1].split()[0]  # Extracts '00000001'
-        new_id = int(first_part) + 1  # Increment by 1
-
-        # Format it back to match the original 8-digit format
-        new_id_str = f"{new_id:08d}"  
-
-        # Replace the first number in the line while keeping the rest unchanged
-        lines[line_number - 1] = new_id_str + "   " + " ".join(lines[line_number - 1].split()[1:]) + "\n"
-
-        # Write the updated content back to the file
-        with open(file_path, "w") as file:
-            file.writelines(lines)
-
-        return first_part
