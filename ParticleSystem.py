@@ -554,8 +554,95 @@ class ParticleSystem:
                 num_updates_for_cluster_checking = 0 # reset
 
 
+    # returns a dataframe of iterations, num_clusters_id as columns
+    def run_simulation_get_iteration_of_first_single_cluster(self, check_rate=3000):
+        num_updates_for_cluster_checking = 0
+        self.refresh_rate = 150 # default to make it faster ...
+        self.is_rendering = False
+        
+        df = pd.DataFrame(columns=["Iteration", f"num_clusters_{self.id}"])
 
 
+        # Set up font for displaying the iteration count
+        font = pygame.font.Font(None, 36)
+
+        for current_iteration in range(self.num_iterations):
+
+            # Event handling
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_e):
+                    pygame.quit()
+                    return
+                if event.type == pygame.KEYDOWN:
+                    self.handle_user_key(event.key)
+
+            # If self.paused_status is True, enter a loop that only breaks when SPACE is pressed again
+            while self.paused_status:
+                
+                self.one_step_mode = False
+
+                # Check for events to allow unpausing and adjusting refresh rate
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_e):
+                        pygame.quit()
+                        return
+                    if event.type == pygame.KEYDOWN:
+                        self.handle_user_key(event.key) # 
+
+                
+                if self.display_run_info:
+                    # Display pause message
+                    text_surface = font.render("Paused - Press SPACE to resume", True, (0, 0, 255))
+                    self.screen.blit(text_surface, (10, 50))
+                pygame.display.update()
+
+            # if one step mode is true, make sure to set pause to true so that next iteration we stop
+            if self.one_step_mode:
+                self.paused_status = True
+
+
+            # Update particles
+            for _ in range(self.refresh_rate):
+                p = random.choice(self.particles)
+                p.update_particle(self.delta, self.epsilon)
+            self.num_updates += 1
+            num_updates_for_cluster_checking += 1
+
+
+            # Only render world if we want to
+            if self.is_rendering:
+
+                # Only refresh display at intervals
+                if self.num_updates >= self.refresh_rate:
+                    self.screen.fill((0, 0, 0))  # Clear the screen
+                    self.draw_board()  # Draw particles
+                    
+                    if self.display_run_info:
+
+                        # Draw the iteration text last
+                        text_surface = font.render(f"Iteration: {current_iteration + 1}/{self.num_iterations}", True, (255, 0, 0))
+                        self.screen.blit(text_surface, (10, 10))  # Draw iteration count on top
+
+                        # Display the ParticleSystem's ID
+                        text_surface = font.render(f"Run ID: {self.id}", True, (0, 255, 0))
+                        self.screen.blit(text_surface, (10, 30))  # Draw ID on top
+
+                    pygame.display.update()  # Update display with iteration count visible
+                    self.num_updates = 0
+            
+            # I can keep the counter but not the world if you want, up to you prof Stauffer
+                    
+            # Check when we get one cluster
+            if num_updates_for_cluster_checking >= check_rate: 
+                    
+                # ASSUMING IT WILL ALWAYS CONVERGE TO 1, WHICH MIGHT BE A BAD ASSUMPTION
+                curr_num_clusters = len(self.get_curr_cluster_sizes())
+                
+                df.loc[len(df)] = [current_iteration, curr_num_clusters]
+                
+                num_updates_for_cluster_checking = 0 # reset
+
+        return df
 
 
 
