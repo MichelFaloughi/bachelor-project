@@ -14,7 +14,7 @@ NUM_ITERATIONS = 1000000000
 INIT_REFRESH_RATE = 1000
 INIT_PAUSED_STATUS = False
 IS_REDENRING = True
-
+ 
 
 running = True
 while running:

@@ -80,6 +80,22 @@ class OneDimensionalParticleSystem:
     
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     ###################
     ## Class Methods ##
     ###################
@@ -110,44 +126,7 @@ class OneDimensionalParticleSystem:
 
 
 
-    def read_and_increment_run_id(self, line_number):
-        assert line_number == 1, 'This is for 1D Particle Systems !'
-
-        file_path = "run_ids.txt"
-
-        with open(file_path, "r") as file:
-            lines = file.readlines()
-
-        # Extract the first number from the specified line
-        first_part = lines[line_number - 1].split()[0]  # Extracts '00000001'
-        new_id = int(first_part) + 1  # Increment by 1
-
-        # Format it back to match the original 8-digit format
-        new_id_str = f"{new_id:08d}"  
-
-        # Replace the first number in the line while keeping the rest unchanged
-        lines[line_number - 1] = new_id_str + "   " + " ".join(lines[line_number - 1].split()[1:]) + "\n"
-
-        # Write the updated content back to the file
-        with open(file_path, "w") as file:
-            file.writelines(lines)
-
-        return first_part
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    
 
 
     # Gives a row of numbers between 0 and 1 inclusive
@@ -167,21 +146,6 @@ class OneDimensionalParticleSystem:
             assert abs(len(segment) - self.L) < 5, 'sum wrong 3abbes'
 
         return row
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     # takes a new_row from the above method and appends it the the chm, and removes the last one
@@ -224,8 +188,6 @@ class OneDimensionalParticleSystem:
         # 1.0	      (255, 255, 255)
 
 
-
-
         # # Interpolate between black (0, 0, 0) and red (255, 0, 0)
         # red = int(fraction * 255)
         # green = 0
@@ -248,6 +210,27 @@ class OneDimensionalParticleSystem:
 
                 # Draw the rectangle
                 pygame.draw.rect(self.screen, color, rect)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -311,6 +294,34 @@ class OneDimensionalParticleSystem:
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    #######################
+    ## Other Admin Stuff ##
+    #######################
+
     def handle_user_key(self, key):
 
         # Handling pause case
@@ -335,3 +346,28 @@ class OneDimensionalParticleSystem:
         # Handling rendering or not
         elif key == pygame.K_r:
             self.is_rendering = not self.is_rendering
+
+
+    def read_and_increment_run_id(self, line_number):
+        assert line_number == 1, 'This is for 1D Particle Systems !'
+
+        file_path = "run_ids.txt"
+
+        with open(file_path, "r") as file:
+            lines = file.readlines()
+
+        # Extract the first number from the specified line
+        first_part = lines[line_number - 1].split()[0]  # Extracts '00000001'
+        new_id = int(first_part) + 1  # Increment by 1
+
+        # Format it back to match the original 8-digit format
+        new_id_str = f"{new_id:08d}"  
+
+        # Replace the first number in the line while keeping the rest unchanged
+        lines[line_number - 1] = new_id_str + "   " + " ".join(lines[line_number - 1].split()[1:]) + "\n"
+
+        # Write the updated content back to the file
+        with open(file_path, "w") as file:
+            file.writelines(lines)
+
+        return first_part
