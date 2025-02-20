@@ -1,10 +1,11 @@
+# How many itereations before one cluster happends
 from ParticleSystem import ParticleSystem
 import pandas as pd
 
 WORLD_WIDTH = 300 # 90 # 200 # 20
 WORLD_HEIGHT = 300 # 90 # 200 # 20
 DELTA = 0.001 # 0.001 # 0.01 # 0.1 # probability to change direction
-MU = 0.4 # density
+MU = 0.5 # density
 EPSILON = 0.99 # probability to just follow the nomral direction for one iteration (and not randomly move)
 ALPHA = 0.99 # probability to be an active (normal) particle
 DOT_SIZE = 2 # 10 # 4
@@ -13,9 +14,9 @@ NUM_ITERATIONS =  100000000000000000000 # None # 10000
 INIT_REFRESH_RATE = 10 # 100
 INIT_PAUSED_STATUS = False
 
+df = pd.DataFrame(columns=["Run ID", "num iterations"])
 
-running = True
-while running:
+for i in range(200):
 
     world = ParticleSystem(
         WORLD_WIDTH,
@@ -31,12 +32,17 @@ while running:
         INIT_PAUSED_STATUS
     )
 
-    world.run_simulation()
+    num_iterations_it_took = world.run_simulation_get_iteration_of_first_single_cluster(
+
+        refresh_rate=2000, check_rate=60000, init_render_status=False, first_check=200000
+        
+        )
     
-    user_input = input('Press R to restart the simulation. Press any other key to stop:  ')
 
-    # This will set running to either True or False based on the user's input if they want to re-run or not
-    running = world.get_user_response(user_input)
+    df.loc[len(df)] = [world.id, num_iterations_it_took] # adds to the df
 
-cluster_sizes = world.get_curr_cluster_sizes()
+    print(f'finished iteration: {i}')
 
+
+# UNCOMMENT TO SAVE RESULTS, BEWARE OF OVERWRITING
+    df.to_excel(f'M{MU}D{DELTA}E{EPSILON}A{ALPHA}_{WORLD_WIDTH}x{WORLD_HEIGHT}_first_cluster.xlsx')
