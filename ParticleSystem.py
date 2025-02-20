@@ -547,6 +547,32 @@ class ParticleSystem:
                 num_updates_for_cluster_checking = 0 # reset
 
 
+    # Similar to function above, just simpler without rendering etc
+    def SIMPLE_run_simulation_get_iteration_of_first_single_cluster(self, refresh_rate=100, check_rate=40000, init_render_status=False, first_check=200000):
+        num_updates_for_cluster_checking = 0 # initialization, this is the counter
+        self.refresh_rate = refresh_rate 
+        self.is_rendering = init_render_status
+
+        for current_iteration in range(self.num_iterations):
+
+            # Update particles
+            for _ in range(self.refresh_rate):
+                p = random.choice(self.particles)
+                p.update_particle(self.delta, self.epsilon)
+            self.num_updates += 1
+            num_updates_for_cluster_checking += 1
+
+            if num_updates_for_cluster_checking >= check_rate and current_iteration > first_check: # we won't check else this
+                    
+                # ASSUMING IT WILL ALWAYS CONVERGE TO 1, WHICH MIGHT BE A BAD ASSUMPTION
+                curr_num_clusters = len(self.get_curr_cluster_sizes(stop_at=2))
+                
+                if curr_num_clusters == 1 or current_iteration >= 10000000: 
+                    pygame.quit()
+                    return current_iteration
+                
+                num_updates_for_cluster_checking = 0 # reset
+
     # returns a dataframe of iterations, num_clusters_id as columns
     def run_simulation_get_num_clusters_at_each_iteration(self, refresh_rate=100, check_rate=3000, init_render_status=False):
         num_updates_for_cluster_checking = 0 # initialization, this is the counter
