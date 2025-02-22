@@ -294,14 +294,7 @@ class ParticleSystem:
             # I can keep the counter but not the world if you want, up to you prof Stauffer
                     
 
-            if current_iteration >= 10000000 and current_iteration % 100000 == 0: # i.e just get cluster sizes every 1000 iteration
-                    
-                # ASSUMING IT WILL ALWAYS CONVERGE TO 1, WHICH MIGHT BE A BAD ASSUMPTION
-                curr_num_clusters = len(self.get_curr_cluster_sizes())
-                
-                if curr_num_clusters == 1: 
-                    pygame.quit()
-                    return current_iteration
+            
 
 
 
@@ -466,12 +459,12 @@ class ParticleSystem:
     # This is a fucntion that will run until we record the first instance of the world having a single cluster
     # We will not check at EACH iteration, and there are a lot of optimizations (short circuiting) to have but
     # for now this is what we have 
-    # This method is made to run alone
-    def run_simulation_get_iteration_of_first_single_cluster(self, check_rate=10000):
-        num_updates_for_cluster_checking = 0
-        self.refresh_rate = 150 # default to make it faster ...
-        self.is_rendering = False
-        
+    # This method is made to run alone, and will return an iteration, unless stopped earlier
+    def run_simulation_get_iteration_of_first_single_cluster(self, refresh_rate=100, check_rate=40000, init_render_status=False, first_check=200000):
+        num_updates_for_cluster_checking = 0 # initialization, this is the counter
+        self.refresh_rate = refresh_rate 
+        self.is_rendering = init_render_status
+
         # Set up font for displaying the iteration count
         font = pygame.font.Font(None, 36)
 
@@ -542,10 +535,10 @@ class ParticleSystem:
             # I can keep the counter but not the world if you want, up to you prof Stauffer
                     
             # Check when we get one cluster
-            if num_updates_for_cluster_checking >= check_rate: 
+            if num_updates_for_cluster_checking >= check_rate and current_iteration > first_check: # we won't check else this
                     
                 # ASSUMING IT WILL ALWAYS CONVERGE TO 1, WHICH MIGHT BE A BAD ASSUMPTION
-                curr_num_clusters = len(self.get_curr_cluster_sizes())
+                curr_num_clusters = len(self.get_curr_cluster_sizes(stop_at=2))
                 
                 if curr_num_clusters == 1 or current_iteration >= 10000000: 
                     pygame.quit()
@@ -555,10 +548,10 @@ class ParticleSystem:
 
 
     # returns a dataframe of iterations, num_clusters_id as columns
-    def run_simulation_get_iteration_of_first_single_cluster(self, check_rate=3000):
-        num_updates_for_cluster_checking = 0
-        self.refresh_rate = 150 # default to make it faster ...
-        self.is_rendering = False
+    def run_simulation_get_num_clusters_at_each_iteration(self, refresh_rate=100, check_rate=3000, init_render_status=False):
+        num_updates_for_cluster_checking = 0 # initialization, this is the counter
+        self.refresh_rate = refresh_rate # default to make it faster ...
+        self.is_rendering = init_render_status
         
         df = pd.DataFrame(columns=["Iteration", f"num_clusters_{self.id}"])
 
@@ -633,7 +626,7 @@ class ParticleSystem:
             # I can keep the counter but not the world if you want, up to you prof Stauffer
                     
             # Check when we get one cluster
-            if num_updates_for_cluster_checking >= check_rate: 
+            if num_updates_for_cluster_checking >= check_rate: # and current_iteration > first_check 
                     
                 # ASSUMING IT WILL ALWAYS CONVERGE TO 1, WHICH MIGHT BE A BAD ASSUMPTION
                 curr_num_clusters = len(self.get_curr_cluster_sizes())
@@ -969,7 +962,8 @@ class ParticleSystem:
 
 
     # returns a list of the size of all cmlusters of that time. len(of this) can tell us the num clusters
-    def get_curr_cluster_sizes(self, min_component_size: int = 20):
+    # the stop_at argument is used to test if we only have a certain number of cluster, if we have more than stop_at we short-circuit
+    def get_curr_cluster_sizes(self, min_component_size: int = 20, stop_at=None) -> list:
         cluster_sizes = []  # Track all cluster sizes
         curr_coords = self.coordinates.copy()  # Make a copy
 
@@ -985,6 +979,10 @@ class ParticleSystem:
             if length >= min_component_size:
                 cluster_sizes.append(length)
 
+            if stop_at: # ie if it's not None
+                if len(cluster_sizes) >= stop_at:
+                    return [] # ? I guess arbitrary
+            
         assert not curr_coords  # Ensure we visited all coordinates
 
         return cluster_sizes
