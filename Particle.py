@@ -47,6 +47,8 @@ class Particle:
                 # self.v = random.choice(global_possible_directions)
                 self.v = random.choices(global_possible_directions,weights=global_weights,k=1)[0]
 
+            # MAYBE I SHOULD ADD AN ELSE HERE BEFORE WHAT COMES NEXT SINCE I AM ESSENTIALLY DOUBLE CHANGING
+            # UNIFORMLY AT RANDOM TWICE INSTEAD OF JUST ONE TIME ...
             if random.random() < epsilon: # business as usual 
                 # Calculate new position with wrapping around edges
                 new_x = (self.x + self.v[0]) % self.board.shape[0]
