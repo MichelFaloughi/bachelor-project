@@ -32,9 +32,9 @@ class ParticleSystem:
         self.middle_cluster_size = middle_cluster_size
 
         if num_iterations is None:
-            self.num_iterations = self.width * self.height ** 2 
+            self.num_iterations = int(self.width * self.height ** 2 )
         else:
-            self.num_iterations = num_iterations
+            self.num_iterations = (num_iterations)
 
 
         self.refresh_rate = init_refresh_rate
@@ -227,7 +227,7 @@ class ParticleSystem:
         # Set up font for displaying the iteration count
         font = pygame.font.Font(None, 36)
 
-        for current_iteration in range(self.num_iterations):
+        for current_iteration in range(int(self.num_iterations)):
 
             # Event handling
             for event in pygame.event.get():
@@ -318,7 +318,7 @@ class ParticleSystem:
 
             font = pygame.font.Font(None, 36)
 
-            for current_iteration in range(self.num_iterations):
+            for current_iteration in range(int(self.num_iterations)):
 
                 # Event handling
                 for event in pygame.event.get():
@@ -362,7 +362,7 @@ class ParticleSystem:
         
         else:
 
-            for current_iteration in range(self.num_iterations):
+            for current_iteration in range(int(self.num_iterations)):
 
                 # Event handling
                 for event in pygame.event.get():
@@ -407,7 +407,7 @@ class ParticleSystem:
 
         records_df = pd.DataFrame(columns=['Iteration', 'Cluster Cardinality'])
 
-        for current_iteration in range(self.num_iterations):
+        for current_iteration in range(int(self.num_iterations)):
             
             # Event handling
             for event in pygame.event.get():
@@ -468,7 +468,7 @@ class ParticleSystem:
         # Set up font for displaying the iteration count
         font = pygame.font.Font(None, 36)
 
-        for current_iteration in range(self.num_iterations):
+        for current_iteration in range(int(self.num_iterations)):
 
             # Event handling
             for event in pygame.event.get():
@@ -553,7 +553,7 @@ class ParticleSystem:
         self.refresh_rate = refresh_rate 
         self.is_rendering = init_render_status
 
-        for current_iteration in range(self.num_iterations):
+        for current_iteration in range(int(self.num_iterations)):
 
             # Update particles
             for _ in range(self.refresh_rate):
@@ -585,7 +585,7 @@ class ParticleSystem:
         # Set up font for displaying the iteration count
         font = pygame.font.Font(None, 36)
 
-        for current_iteration in range(self.num_iterations):
+        for current_iteration in range(int(self.num_iterations)):
 
             # Event handling
             for event in pygame.event.get():
@@ -989,7 +989,7 @@ class ParticleSystem:
 
     # returns a list of the size of all cmlusters of that time. len(of this) can tell us the num clusters
     # the stop_at argument is used to test if we only have a certain number of cluster, if we have more than stop_at we short-circuit
-    def get_curr_cluster_sizes(self, min_component_size: int = 20, stop_at=None) -> list:
+    def get_curr_cluster_sizes(self, min_component_size: int = 50, stop_at=None) -> list:
         cluster_sizes = []  # Track all cluster sizes
         curr_coords = self.coordinates.copy()  # Make a copy
 

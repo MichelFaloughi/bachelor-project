@@ -2,8 +2,8 @@
 from ParticleSystem import ParticleSystem
 import pandas as pd
 
-WORLD_WIDTH = 300 # 90 # 200 # 20
-WORLD_HEIGHT = 300 # 90 # 200 # 20
+WORLD_WIDTH = 200 # 90 # 200 # 20
+WORLD_HEIGHT = 200 # 90 # 200 # 20
 DELTA = 0.001 # 0.001 # 0.01 # 0.1 # probability to change direction
 MU = 0.5 # density
 EPSILON = 0.99 # probability to just follow the nomral direction for one iteration (and not randomly move)
@@ -34,7 +34,7 @@ for i in range(200):
 
     num_iterations_it_took = world.run_simulation_get_iteration_of_first_single_cluster(
 
-        refresh_rate=2000, check_rate=60000, init_render_status=False, first_check=200000
+        refresh_rate=100, check_rate=60000, init_render_status=True, first_check=200000
         
         )
     
