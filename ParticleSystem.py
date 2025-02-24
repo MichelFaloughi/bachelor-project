@@ -113,8 +113,7 @@ class ParticleSystem:
 
                         # remember possible_directions should look like this [ [0,1], [1,0], [0,-1], [-1,0] ]
                         v = random.choice(self.possible_directions)
-                        
-
+                    
                     else: 
                         active = False
                         v = None
@@ -281,7 +280,7 @@ class ParticleSystem:
                     if self.display_run_info:
 
                         # Draw the iteration text last
-                        text_surface = font.render(f"Iteration: {current_iteration + 1}/{self.num_iterations}", True, (255, 0, 0))
+                        text_surface = font.render(f"Iteration: {current_iteration + 1}", True, (255, 0, 0))
                         self.screen.blit(text_surface, (10, 10))  # Draw iteration count on top
 
                         # Display the ParticleSystem's ID
@@ -356,7 +355,7 @@ class ParticleSystem:
                 # if current_iteration % self.refresh_rate  == 0 or current_iteration == self.num_iterations - 1:
                 
                     self.screen.fill((0, 0, 0))  # Clear the screen
-                    text_surface = font.render(f"Iteration: {current_iteration + 1}/{self.num_iterations}", True, (255, 255, 255))
+                    text_surface = font.render(f"Iteration: {current_iteration + 1}", True, (255, 255, 255))
                     self.screen.blit(text_surface, (10, 10))  # Draw the iteration count text
                     pygame.display.update()  # Update display with iteration count only
         
@@ -522,7 +521,7 @@ class ParticleSystem:
                     if self.display_run_info:
 
                         # Draw the iteration text last
-                        text_surface = font.render(f"Iteration: {current_iteration + 1}/{self.num_iterations}", True, (255, 0, 0))
+                        text_surface = font.render(f"Iteration: {current_iteration + 1}", True, (255, 0, 0))
                         self.screen.blit(text_surface, (10, 10))  # Draw iteration count on top
 
                         # Display the ParticleSystem's ID
@@ -540,7 +539,7 @@ class ParticleSystem:
                 # ASSUMING IT WILL ALWAYS CONVERGE TO 1, WHICH MIGHT BE A BAD ASSUMPTION
                 curr_num_clusters = len(self.get_curr_cluster_sizes(stop_at=2))
                 
-                if curr_num_clusters == 1 or current_iteration >= 10000000: 
+                if curr_num_clusters == 1: 
                     pygame.quit()
                     return current_iteration
                 
@@ -567,7 +566,7 @@ class ParticleSystem:
                 # ASSUMING IT WILL ALWAYS CONVERGE TO 1, WHICH MIGHT BE A BAD ASSUMPTION
                 curr_num_clusters = len(self.get_curr_cluster_sizes(stop_at=2))
                 
-                if curr_num_clusters == 1 or current_iteration >= 10000000: 
+                if curr_num_clusters == 1: #  or current_iteration >= 10000000:  it was a stupid idea ...
                     pygame.quit()
                     return current_iteration
                 
@@ -639,7 +638,7 @@ class ParticleSystem:
                     if self.display_run_info:
 
                         # Draw the iteration text last
-                        text_surface = font.render(f"Iteration: {current_iteration + 1}/{self.num_iterations}", True, (255, 0, 0))
+                        text_surface = font.render(f"Iteration: {current_iteration + 1}", True, (255, 0, 0))
                         self.screen.blit(text_surface, (10, 10))  # Draw iteration count on top
 
                         # Display the ParticleSystem's ID

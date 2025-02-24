@@ -16,7 +16,7 @@ INIT_PAUSED_STATUS = False
 
 df = pd.DataFrame(columns=["Run ID", "num iterations"])
 
-for i in range(200):
+for i in range(100):
 
     world = ParticleSystem(
         WORLD_WIDTH,
@@ -32,9 +32,9 @@ for i in range(200):
         INIT_PAUSED_STATUS
     )
 
-    num_iterations_it_took = world.run_simulation_get_iteration_of_first_single_cluster(
+    num_iterations_it_took = world.SIMPLE_run_simulation_get_iteration_of_first_single_cluster(
 
-        refresh_rate=100, check_rate=60000, init_render_status=True, first_check=200000
+        refresh_rate=100, check_rate=60000, init_render_status=False, first_check=10000000
         
         )
     
