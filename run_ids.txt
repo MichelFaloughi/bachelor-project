@@ -1,2 +1,6 @@
 00000011   This one is for 1D particle systems
+<<<<<<< HEAD
 00000401   This one is for 2D particle systems
+=======
+00000402   This one is for 2D particle systems
+>>>>>>> c077a06b01c2d61b6d27d46ae9ed7b9eaa2be32a
