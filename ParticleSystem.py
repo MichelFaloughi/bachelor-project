@@ -538,9 +538,6 @@ class ParticleSystem:
                     
                 # ASSUMING IT WILL ALWAYS CONVERGE TO 1, WHICH MIGHT BE A BAD ASSUMPTION
                 curr_num_clusters = len(self.get_curr_cluster_sizes(stop_at=2))
-                
-                # DEBUG STATEMENT:
-                print('Current number of clusters: ', curr_num_clusters)
 
                 if curr_num_clusters == 1: 
                     pygame.quit()
@@ -1065,9 +1062,7 @@ class ParticleSystem:
                 cluster_sizes.append(length)
 
             if stop_at: # ie if it's not None
-                print(cluster_sizes) # DEBUG
                 if len(cluster_sizes) >= stop_at:
-                    print('Hi') # DEBUG STATEMENT
                     return [] # ? I guess arbitrary
             
         assert not curr_coords  # Ensure we visited all coordinates
