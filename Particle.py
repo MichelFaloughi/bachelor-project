@@ -39,7 +39,6 @@ class Particle:
             # (ie particle will always randomly move, not sure if that epsilon = 1 or 0 actually, too lazy to check)
             random_direction = random.choice(global_possible_directions)
             
-            
             # random_direction = random.choices(global_possible_directions, weights=global_weights, k=1)[0]
             new_x = (self.x + random_direction[0]) % self.board.shape[0]
             new_y = (self.y + random_direction[1]) % self.board.shape[1]
@@ -48,19 +47,20 @@ class Particle:
             if random.random() < delta:  # Change direction randomly
                 self.v = random.choice(global_possible_directions)
                 # self.v = random.choices(global_possible_directions, weights=global_weights, k=1)[0]
-
-            # MAYBE I SHOULD ADD AN ELSE HERE BEFORE WHAT COMES NEXT SINCE I AM ESSENTIALLY DOUBLE CHANGING
-            # UNIFORMLY AT RANDOM TWICE INSTEAD OF JUST ONE TIME ...
-            if random.random() < epsilon: # business as usual 
-                # Calculate new position with wrapping around edges
                 new_x = (self.x + self.v[0]) % self.board.shape[0]
                 new_y = (self.y + self.v[1]) % self.board.shape[1]
-            else: 
-                # That is not assigned to the particle, its like a temp direction
-                random_direction = random.choice(global_possible_directions)
-                # random_direction = random.choices(global_possible_directions, weights=global_weights, k=1)[0]
-                new_x = (self.x + random_direction[0]) % self.board.shape[0]
-                new_y = (self.y + random_direction[1]) % self.board.shape[1]
+            
+            else:
+                if random.random() < epsilon: # business as usual 
+                    # Calculate new position with wrapping around edges
+                    new_x = (self.x + self.v[0]) % self.board.shape[0]
+                    new_y = (self.y + self.v[1]) % self.board.shape[1]
+                else: 
+                    # That is not assigned to the particle, its like a temp direction
+                    random_direction = random.choice(global_possible_directions)
+                    # random_direction = random.choices(global_possible_directions, weights=global_weights, k=1)[0]
+                    new_x = (self.x + random_direction[0]) % self.board.shape[0]
+                    new_y = (self.y + random_direction[1]) % self.board.shape[1]
 
 
 

@@ -9,7 +9,7 @@ EPSILON = 0.9 # probability to just follow the nomral direction for one iteratio
 ALPHA = 0.8 # probability to be an active (normal) particle
 DOT_SIZE = 3 # 4
 MIDDLE_CLUSTER_SIZE = -1 # 10
-NUM_ITERATIONS =  100000000000000000000 # None # 10000
+NUM_ITERATIONS =  10 ** 18 # None # 10000
 INIT_REFRESH_RATE = 10 # 100
 INIT_PAUSED_STATUS = False
 

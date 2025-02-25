@@ -395,7 +395,7 @@ class ParticleSystem:
 
 
     # now this doesn't allow to stop mid way
-    def run_simulation_keep_track_of_cluster_size(self, calculation_interval=100, calculation_method='ring'):
+    def run_simulation_keep_track_of_middle_cluster_size(self, calculation_interval=100, calculation_method='ring'):
         """Runs the particle simulation while keeping track of cluster size at specified intervals."""
         # first just set the method
         if calculation_method == 'ring':
@@ -539,6 +539,9 @@ class ParticleSystem:
                 # ASSUMING IT WILL ALWAYS CONVERGE TO 1, WHICH MIGHT BE A BAD ASSUMPTION
                 curr_num_clusters = len(self.get_curr_cluster_sizes(stop_at=2))
                 
+                # DEBUG STATEMENT:
+                print('Current number of clusters: ', curr_num_clusters)
+
                 if curr_num_clusters == 1: 
                     pygame.quit()
                     return current_iteration
@@ -722,8 +725,19 @@ class ParticleSystem:
         # Handling display of run info, run ID and iteration
         elif key == pygame.K_i:
             self.display_run_info = not self.display_run_info
-            
         
+        # Getting origin cluster cardinality for DEBUG or other purposes
+        elif key == pygame.K_c:
+            origin_cluster_cardinality, nodes = self.get_curr_cluster_STRICT_cardinality(also_return_visited_nodes=True)
+            print(origin_cluster_cardinality, '  ', nodes)
+        
+        # same for cluster size and DEBUG puposes
+        elif key == pygame.K_x:
+            curr_cluster_sizes: list = self.get_curr_cluster_sizes()
+            curr_num_clusters : int = len(curr_cluster_sizes)
+            
+            print(f'''Cluster Sizes: {curr_cluster_sizes}
+                  Num Clusters: {curr_num_clusters}''')
 
 
 
@@ -767,9 +781,9 @@ class ParticleSystem:
 
 
 
-    #############################
-    ## Statistics Calculations ##
-    #############################
+                                            #############################
+############################################## Statistics Calculations ##############################################
+                                            #############################
 
     def get_curr_cluster_cardinality(self, start_x=None, start_y=None, also_return_visited_nodes: bool = False):
         """Calculate the cardinality of the cluster starting from the origin or surrounding cells."""
@@ -828,6 +842,53 @@ class ParticleSystem:
         if also_return_visited_nodes:
             return length, nodes_in_cluster
         return length
+    
+    
+    # This method differs from the above in that it doesn't check the neighboring cells to start_x and start_y if the formers
+    # are empty, it just returns 0 or 0, []
+    def get_curr_cluster_STRICT_cardinality(self, start_x=None, start_y=None, also_return_visited_nodes: bool = False):
+        """Calculate the cardinality of the cluster starting from the origin cell STRICTLY."""
+        # This is to make sure the default values are the origin
+        if start_x is None:
+            start_x = self.origin_x
+
+        if start_y is None:
+            start_y = self.origin_y
+
+        # If the start position is empty, return 0 immediately
+        if self.board[start_x, start_y] == 0:
+            return (0, []) if also_return_visited_nodes else 0
+        
+        # Initialize BFS/DFS
+        queue = [(start_x, start_y)]
+        visited = set(queue)
+        length = 0
+        nodes_in_cluster = []
+
+        # Directions for North, South, East, West
+        directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+
+        # Perform BFS/DFS
+        while queue:
+            x, y = queue.pop(0)  # Use queue.pop() for DFS instead
+            length += 1  # Count this particle
+            nodes_in_cluster.append((x, y))
+
+            # Check all adjacent positions
+            for dx, dy in directions:
+                nx, ny = x + dx, y + dy
+
+                # Ensure the neighbor is within bounds
+                if 0 <= nx < self.width and 0 <= ny < self.height:
+                    # Check if the neighbor has a particle and hasn't been visited
+                    if self.board[nx, ny] == 1 and (nx, ny) not in visited:
+                        queue.append((nx, ny))
+                        visited.add((nx, ny))  # Mark as visited
+
+        return (length, nodes_in_cluster) if also_return_visited_nodes else length
+    
+
+
 
 
     def get_curr_radius_euclidean_length(self):
@@ -938,74 +999,76 @@ class ParticleSystem:
         return max(cardinalities)
 
 
-    def get_curr_strict_cluster_cardinality(self, start_x=None, start_y=None, also_return_visited_nodes: bool = False):
-        """Calculate the cardinality of the cluster starting from the origin or surrounding cells."""
-        # This is to make sure the default values are the origin
-        if start_x is None:
-            start_x = self.origin_x
+    # def get_curr_strict_cluster_cardinality(self, start_x=None, start_y=None, also_return_visited_nodes: bool = False):
+    #     """Calculate the cardinality of the cluster starting from the origin or surrounding cells."""
+    #     # This is to make sure the default values are the origin
+    #     if start_x is None:
+    #         start_x = self.origin_x
 
-        if start_y is None:
-            start_y = self.origin_y
+    #     if start_y is None:
+    #         start_y = self.origin_y
 
-        # If the origin has a particle, start the search from the origin
-        if self.board[start_x, start_y] == 1:
-            queue = [(start_x, start_y)]
-        else:
-            if also_return_visited_nodes:
-                return 0, []
-            return 0
+    #     # If the origin has a particle, start the search from the origin
+    #     if self.board[start_x, start_y] == 1:
+    #         queue = [(start_x, start_y)]
+    #     else:
+    #         if also_return_visited_nodes:
+    #             return 0, []
+    #         return 0
 
-        # Initialize BFS/DFS
-        visited = set(queue)
-        length = 0
-        nodes_in_cluster = []
+    #     # Initialize BFS/DFS
+    #     visited = set(queue)
+    #     length = 0
+    #     nodes_in_cluster = []
 
-        # Directions for North, South, East, West
-        directions = [
-            (1, 0), (-1, 0), (0, 1), (0, -1)  # N, S, E, W
-        ]
+    #     # Directions for North, South, East, West
+    #     directions = [
+    #         (1, 0), (-1, 0), (0, 1), (0, -1)  # N, S, E, W
+    #     ]
 
-        # Perform BFS/DFS
-        while queue:
-            x, y = queue.pop(0)  # Use queue.pop() if DFS is preferred
-            length += 1  # Count this particle
-            nodes_in_cluster.append((x, y))
-            # Check all adjacent positions
-            for dx, dy in directions:
-                nx, ny = x + dx, y + dy
+    #     # Perform BFS/DFS
+    #     while queue:
+    #         x, y = queue.pop(0)  # Use queue.pop() if DFS is preferred
+    #         length += 1  # Count this particle
+    #         nodes_in_cluster.append((x, y))
+    #         # Check all adjacent positions
+    #         for dx, dy in directions:
+    #             nx, ny = x + dx, y + dy
 
-                # Ensure the neighbor is within bounds
-                if 0 <= nx < self.width and 0 <= ny < self.height:
-                    # Check if the neighbor has a particle and hasn't been visited
-                    if self.board[nx, ny] == 1 and (nx, ny) not in visited:
-                        queue.append((nx, ny))
-                        visited.add((nx, ny))  # Mark as visited
+    #             # Ensure the neighbor is within bounds
+    #             if 0 <= nx < self.width and 0 <= ny < self.height:
+    #                 # Check if the neighbor has a particle and hasn't been visited
+    #                 if self.board[nx, ny] == 1 and (nx, ny) not in visited:
+    #                     queue.append((nx, ny))
+    #                     visited.add((nx, ny))  # Mark as visited
 
-        if also_return_visited_nodes:
-            return length, nodes_in_cluster
-        return length
+    #     if also_return_visited_nodes:
+    #         return length, nodes_in_cluster
+    #     return length
 
 
     # returns a list of the size of all cmlusters of that time. len(of this) can tell us the num clusters
     # the stop_at argument is used to test if we only have a certain number of cluster, if we have more than stop_at we short-circuit
-    def get_curr_cluster_sizes(self, min_component_size: int = 50, stop_at=None) -> list:
+    def get_curr_cluster_sizes(self, min_cluster_size: int = 50, stop_at=None) -> list:
         cluster_sizes = []  # Track all cluster sizes
         curr_coords = self.coordinates.copy()  # Make a copy
 
         while curr_coords:  # Process until all coordinates are visited
             x, y = curr_coords.pop(0)  # Get first coordinate and remove it
-            length, visited_nodes = self.get_curr_strict_cluster_cardinality(
+            length, visited_nodes = self.get_curr_cluster_STRICT_cardinality(
                 start_x=x, start_y=y, also_return_visited_nodes=True
             )
             
             # Remove visited nodes from curr_coords
             curr_coords = [coord for coord in curr_coords if coord not in visited_nodes]
 
-            if length >= min_component_size:
+            if length >= min_cluster_size:
                 cluster_sizes.append(length)
 
             if stop_at: # ie if it's not None
+                print(cluster_sizes) # DEBUG
                 if len(cluster_sizes) >= stop_at:
+                    print('Hi') # DEBUG STATEMENT
                     return [] # ? I guess arbitrary
             
         assert not curr_coords  # Ensure we visited all coordinates
