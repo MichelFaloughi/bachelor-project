@@ -847,18 +847,17 @@ class ParticleSystem:
     # This method differs from the above in that it doesn't check the neighboring cells to start_x and start_y if the formers
     # are empty, it just returns 0 or 0, []
     def get_curr_cluster_STRICT_cardinality(self, start_x=None, start_y=None, also_return_visited_nodes: bool = False):
-        """Calculate the cardinality of the cluster starting from the origin cell STRICTLY."""
-        # This is to make sure the default values are the origin
+        """Calculate the cardinality of the cluster starting from the origin cell STRICTLY in a toroidal board."""
+        # Ensure default values are the origin
         if start_x is None:
             start_x = self.origin_x
-
         if start_y is None:
             start_y = self.origin_y
 
         # If the start position is empty, return 0 immediately
         if self.board[start_x, start_y] == 0:
             return (0, []) if also_return_visited_nodes else 0
-        
+
         # Initialize BFS/DFS
         queue = [(start_x, start_y)]
         visited = set(queue)
@@ -874,18 +873,18 @@ class ParticleSystem:
             length += 1  # Count this particle
             nodes_in_cluster.append((x, y))
 
-            # Check all adjacent positions
+            # Check all adjacent positions, wrapping around using modulo
             for dx, dy in directions:
-                nx, ny = x + dx, y + dy
+                nx = (x + dx) % self.width  # Wrap around horizontally
+                ny = (y + dy) % self.height  # Wrap around vertically
 
-                # Ensure the neighbor is within bounds
-                if 0 <= nx < self.width and 0 <= ny < self.height:
-                    # Check if the neighbor has a particle and hasn't been visited
-                    if self.board[nx, ny] == 1 and (nx, ny) not in visited:
-                        queue.append((nx, ny))
-                        visited.add((nx, ny))  # Mark as visited
+                # Check if the neighbor has a particle and hasn't been visited
+                if self.board[nx, ny] == 1 and (nx, ny) not in visited:
+                    queue.append((nx, ny))
+                    visited.add((nx, ny))  # Mark as visited
 
         return (length, nodes_in_cluster) if also_return_visited_nodes else length
+
     
 
 
