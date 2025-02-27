@@ -82,6 +82,8 @@ class ParticleSystem:
 
         self.id = self.read_and_increment_run_id(2) 
 
+        self.log_run(excel_path="ParticleSystem_database.xlsx") # log the run in the database
+
 
 
     ###################
@@ -213,6 +215,28 @@ class ParticleSystem:
 
         return first_part
 
+    # This is the function that will write to the 'ParticleSystem_database.xlsx' 
+    def log_run(self, excel_path="ParticleSystem_database.xlsx"):
+
+        new_data = {
+            "ID": [self.id],  
+            "mu": [self.mu],
+            "delta": [self.delta],
+            "epsilon": [self.epsilon],
+            "alpha": [self.alpha],
+            "width": [self.width],
+            "height": [self.height],
+            "num_particles": [self.num_particles],
+            "num_iterations": [self.num_iterations]
+        }
+
+        new_df = pd.DataFrame(new_data)
+
+        # Append to the existing Excel file
+        with pd.ExcelWriter(excel_path, mode="a", if_sheet_exists="overlay", engine="openpyxl") as writer:
+            existing_df = pd.read_excel(excel_path, engine="openpyxl")
+            updated_df = pd.concat([existing_df, new_df], ignore_index=True)
+            updated_df.to_excel(writer, index=False)
 
 
 
@@ -459,7 +483,7 @@ class ParticleSystem:
     # We will not check at EACH iteration, and there are a lot of optimizations (short circuiting) to have but
     # for now this is what we have 
     # This method is made to run alone, and will return an iteration, unless stopped earlier
-    def run_simulation_get_iteration_of_first_single_cluster(self, refresh_rate=100, check_rate=40000, init_render_status=False, first_check=200000):
+    def run_simulation_get_iteration_of_first_single_cluster(self, refresh_rate=100, check_rate=40000, init_render_status=False, first_check=200000, min_cluster_size=500):
         num_updates_for_cluster_checking = 0 # initialization, this is the counter
         self.refresh_rate = refresh_rate 
         self.is_rendering = init_render_status
@@ -537,7 +561,7 @@ class ParticleSystem:
             if num_updates_for_cluster_checking >= check_rate and current_iteration > first_check: # we won't check else this
                     
                 # ASSUMING IT WILL ALWAYS CONVERGE TO 1, WHICH MIGHT BE A BAD ASSUMPTION
-                curr_num_clusters = len(self.get_curr_cluster_sizes(stop_at=2))
+                curr_num_clusters = len(self.get_curr_cluster_sizes(stop_at=2, min_cluster_size=min_cluster_size))
 
                 if curr_num_clusters == 1: 
                     pygame.quit()
@@ -572,14 +596,13 @@ class ParticleSystem:
                 
                 num_updates_for_cluster_checking = 0 # reset
 
-    # returns a dataframe of iterations, num_clusters_id as columns
-    def run_simulation_get_num_clusters_at_each_iteration(self, refresh_rate=100, check_rate=3000, init_render_status=False):
+    # RETURNS A DATAFRAME of iterations, num_clusters_id as columns
+    def run_simulation_get_num_clusters_at_each_iteration(self, min_cluster_size, refresh_rate=100, check_rate=3000, init_render_status=False):
         num_updates_for_cluster_checking = 0 # initialization, this is the counter
         self.refresh_rate = refresh_rate # default to make it faster ...
         self.is_rendering = init_render_status
         
-        df = pd.DataFrame(columns=["Iteration", f"num_clusters_{self.id}"])
-
+        df = pd.DataFrame(columns=["Iteration", f"ParticleSystem_{str(int(self.id))}"]) # the nested str int structure is to remove the left 0s 
 
         # Set up font for displaying the iteration count
         font = pygame.font.Font(None, 36)
@@ -653,8 +676,9 @@ class ParticleSystem:
             # Check when we get one cluster
             if num_updates_for_cluster_checking >= check_rate: # and current_iteration > first_check 
                     
+                
                 # ASSUMING IT WILL ALWAYS CONVERGE TO 1, WHICH MIGHT BE A BAD ASSUMPTION
-                curr_num_clusters = len(self.get_curr_cluster_sizes())
+                curr_num_clusters = len(self.get_curr_cluster_sizes(min_cluster_size=min_cluster_size))
                 
                 df.loc[len(df)] = [current_iteration, curr_num_clusters]
                 
