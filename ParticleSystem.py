@@ -688,9 +688,136 @@ class ParticleSystem:
 
 
 
+    # this will run de experiment described on 27/02/2025 in the log book
+    # returns a dict (a new row to be added to whatever dataframe I am writing to)
+    def run_simulation_latest_experiement(self, min_cluster_size, refresh_rate=100, check_rate=3000, init_render_status=False):
+
+        # record min(iteration of first time we get one single cluster, self.num_iterations)                   -- a single number
+        # num large clusters at the end of the simulations                                                     -- a single number   
+        # num particles in large clusters at the end of the simulation                                         -- a list (one number per cluster)
+        # num particles in total in the system (can get at time 0) to compute density of clustered particles   -- a single number 
+        # density of clustered particles                                                                       -- a single number in (0,1)
+
+        first_single_cluster_recorded = False # swap to true when we do to stop checking, use stop_at when checking
+
+        num_updates_for_cluster_checking = 0 # initialization, this is the counter
+        self.refresh_rate = refresh_rate # default to make it faster ...
+        self.is_rendering = init_render_status
+        
+        iteration_of_first_single_cluster = None # we have to set it to None until we find one, we might not
+
+        # This is what will be returned
+        return_row = {'Run ID': int(self.id),
+                      'Iteration of first single cluster': None,          # placeholder
+                      'Num clusters at end': None,                        # placeholder
+                      'Num particles per cluster at end': None,           # placeholder
+                      'Total num particles in clusters at end': None,     # placeholder
+                      'Total num particles': self.num_particles,  
+                      'Density of clustered particles': None,             # placeholder, assert this is in (0,1)
+                      }
+       
+        font = pygame.font.Font(None, 36)
+        for current_iteration in range(int(self.num_iterations)):
+                    
+                # Event handling
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_e):
+                        pygame.quit()
+                        return
+                    if event.type == pygame.KEYDOWN:
+                        self.handle_user_key(event.key)
+                # If self.paused_status is True, enter a loop that only breaks when SPACE is pressed again
+                while self.paused_status:
+                    
+                    self.one_step_mode = False
+
+                    # Check for events to allow unpausing and adjusting refresh rate
+                    for event in pygame.event.get():
+                        if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_e):
+                            pygame.quit()
+                            return
+                        if event.type == pygame.KEYDOWN:
+                            self.handle_user_key(event.key) # 
+
+                    
+                    if self.display_run_info:
+                        # Display pause message
+                        text_surface = font.render("Paused - Press SPACE to resume", True, (0, 0, 255))
+                        self.screen.blit(text_surface, (10, 50))
+                    pygame.display.update()
+                #if one step mode is true, make sure to set pause to true so that next iteration we stop
+                if self.one_step_mode:
+                    self.paused_status = True
+
+
+                # Update particles
+                for _ in range(self.refresh_rate):
+                    p = random.choice(self.particles)
+                    p.update_particle(self.delta, self.epsilon)
+                self.num_updates += 1
+                num_updates_for_cluster_checking += 1
+
+                # Only render world if we want to
+                if self.is_rendering:
+
+                    # Only refresh display at intervals
+                    if self.num_updates >= self.refresh_rate:
+                        self.screen.fill((0, 0, 0))  # Clear the screen
+                        self.draw_board()  # Draw particles
+                        
+                        if self.display_run_info:
+
+                            # Draw the iteration text last
+                            text_surface = font.render(f"Iteration: {current_iteration + 1}", True, (255, 0, 0))
+                            self.screen.blit(text_surface, (10, 10))  # Draw iteration count on top
+
+                            # Display the ParticleSystem's ID
+                            text_surface = font.render(f"Run ID: {self.id}", True, (0, 255, 0))
+                            self.screen.blit(text_surface, (10, 30))  # Draw ID on top
+
+                        pygame.display.update()  # Update display with iteration count visible
+                        self.num_updates = 0
+                
+                
+                if (not first_single_cluster_recorded) and (num_updates_for_cluster_checking >= check_rate):
+                    # if we haven't found the first cluster yet
+
+                    curr_num_clusters = len(self.get_curr_cluster_sizes(min_cluster_size=min_cluster_size, stop_at=2))
+                                        
+                    num_updates_for_cluster_checking = 0 # reset
+
+                    if curr_num_clusters == 1:
+                        iteration_of_first_single_cluster = current_iteration
+                        first_single_cluster_recorded = True
 
 
 
+
+        # now that we are at the end of the system's simulation:
+        cluster_sizes                  = self.get_curr_cluster_sizes(min_cluster_size=min_cluster_size)
+        num_clusters_at_end            = len(cluster_sizes)
+        total_clustered_particles      = sum(cluster_sizes)
+        density_of_clustered_particles = round(total_clustered_particles / self.num_particles , 4)
+
+        return_row['Iteration of first single cluster']      = iteration_of_first_single_cluster
+        return_row['Num clusters at end']                    = num_clusters_at_end
+        return_row['Num particles per cluster at end']       = cluster_sizes
+        return_row['Total num particles in clusters at end'] = total_clustered_particles
+        return_row['Density of clustered particles']         = density_of_clustered_particles 
+
+        # It is possible that are no single clusters we can't assume that yet
+        # assert  return_row['Iteration of first single cluster'] is not None,       "Iteration of first single cluster is None!"
+        
+        assert  return_row['Num clusters at end'] is not None,                 "Num clusters at the end is None!"
+        assert  return_row['Num particles per cluster at end'] is not None,        "Num particles per cluster at end None!"
+        assert  return_row['Total num particles in clusters at end'] is not None,  "Total num particles in clusters at end is None!"
+        assert  return_row['Density of clustered particles'] is not None,          "Density of clustered particles is None!"
+        assert  return_row['Run ID'] is not None,                                  "Run ID is None!"
+        assert  return_row['Total num particles'] is not None,                     "Total num particles is None!"
+
+        assert 0 <= return_row["Density of clustered particles"] <= 1,  "Something wrong with the density bruh"
+        
+        return return_row
 
 
 
