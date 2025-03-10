@@ -1,7 +1,7 @@
 from ParticleSystem import ParticleSystem
 import pandas as pd
 
-WORLD_WIDTH = 300 # 200 # 20
+WORLD_WIDTH = 100 # 200 # 20
 WORLD_HEIGHT = 100 # 200 # 20
 DELTA = 0.0001 # 0.001 # 0.01 # 0.1 # probability to change direction
 MU = 0.4 # density
@@ -10,12 +10,12 @@ ALPHA = 0.8 # probability to be an active (normal) particle
 DOT_SIZE = 5 # 4
 MIDDLE_CLUSTER_SIZE = -1 # 10
 NUM_ITERATIONS =  10 ** 18 # None # 10000
-INIT_REFRESH_RATE = 10 # 100
-INIT_PAUSED_STATUS = True
-DIRECTION_WEIGHTS = [0.1, # right
-                     0.11, # down
+INIT_REFRESH_RATE = 150 # 100
+INIT_PAUSED_STATUS = False
+DIRECTION_WEIGHTS = [0.4, # right
+                     0.4, # down
                      0.1, # left
-                     1111  # up
+                     0.1  # up
                      ]
 
 running = True
@@ -38,7 +38,7 @@ while running:
         INIT_REFRESH_RATE,
         INIT_PAUSED_STATUS
 
-        # , direction_weights=DIRECTION_WEIGHTS
+        , direction_weights=DIRECTION_WEIGHTS
     )
 
     world.run_simulation()
