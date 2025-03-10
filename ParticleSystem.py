@@ -2,7 +2,7 @@
 import pygame
 import random
 import numpy as np
-from global_variables import global_possible_directions, global_weights  # Ensure this file is available
+from global_variables import global_possible_directions # Ensure this file is available
 import math
 from Particle import Particle
 import pandas as pd
@@ -12,8 +12,8 @@ class ParticleSystem:
     def __init__(self, width: int, height: int, delta: float, mu: float, epsilon: float, alpha: float,
                  dot_size: int, middle_cluster_size:int=-1,
                  num_iterations:int=None, init_refresh_rate:int=8, init_paused_status:bool=False,
-                 init_one_step_mode:bool=False,
-                 world_title: str = 'Interactive Particle System', icon_file_path: str = 'kcl.png'):
+                 init_one_step_mode:bool=False, direction_weights:list=[0.25,0.25,0.25,0.25],
+                 world_title:str='Interactive Particle System', icon_file_path:str='kcl.png'):
         
         # Validations
         assert 0 <= mu <= 1 and 0 <= delta <= 1
@@ -48,6 +48,7 @@ class ParticleSystem:
         # beware there are more efficient ways to get the coordinates if you want
 
         self.possible_directions = global_possible_directions
+        self.direction_weights = direction_weights
         
         # Set up display
         self.screen = pygame.display.set_mode((self.width * self.dot_size, self.height * self.dot_size))
@@ -120,7 +121,7 @@ class ParticleSystem:
                         active = False
                         v = None
 
-                    return_list.append(Particle(x, y, v, active, self.dot_size, self.board, self.screen))
+                    return_list.append(Particle(x, y, v, active, self.dot_size, self.board, self.screen, self.direction_weights))
 
         return return_list
     
@@ -145,7 +146,7 @@ class ParticleSystem:
                         active = True
                         # remember possible_directions should look like this [ [0,1], [1,0], [0,-1], [-1,0] ]
                         v = random.choices(self.possible_directions,
-                                          weights= global_weights,
+                                          weights= self.direction_weights,
                                                    k=1  # i think num choices
                                                    )[0]
                         # v = [1,0]
@@ -153,7 +154,7 @@ class ParticleSystem:
                         active = False
                         v = None
 
-                    return_list.append(Particle(x, y, v, active, self.dot_size, self.board, self.screen))
+                    return_list.append(Particle(x, y, v, active, self.dot_size, self.board, self.screen, self.direction_weights))
         
         
         return return_list
@@ -250,6 +251,8 @@ class ParticleSystem:
         # Set up font for displaying the iteration count
         font = pygame.font.Font(None, 36)
 
+        # debug_velocities = [] # DEBUG
+
         for current_iteration in range(int(self.num_iterations)):
 
             # Event handling
@@ -290,6 +293,9 @@ class ParticleSystem:
             for _ in range(self.refresh_rate):
                 p = random.choice(self.particles)
                 p.update_particle(self.delta, self.epsilon)
+                
+                # debug_velocities.append(p.v) # DEBUG
+
             self.num_updates += 1
 
 
@@ -302,6 +308,9 @@ class ParticleSystem:
                     self.draw_board()  # Draw particles
                     
                     if self.display_run_info:
+
+                        # DEBUG
+                        # return debug_velocities
 
                         # Draw the iteration text last
                         text_surface = font.render(f"Iteration: {current_iteration + 1}", True, (255, 0, 0))
@@ -1144,54 +1153,6 @@ class ParticleSystem:
             cardinalities.append(self.get_curr_cluster_cardinality(x, y))
 
         return max(cardinalities)
-
-
-    # def get_curr_strict_cluster_cardinality(self, start_x=None, start_y=None, also_return_visited_nodes: bool = False):
-    #     """Calculate the cardinality of the cluster starting from the origin or surrounding cells."""
-    #     # This is to make sure the default values are the origin
-    #     if start_x is None:
-    #         start_x = self.origin_x
-
-    #     if start_y is None:
-    #         start_y = self.origin_y
-
-    #     # If the origin has a particle, start the search from the origin
-    #     if self.board[start_x, start_y] == 1:
-    #         queue = [(start_x, start_y)]
-    #     else:
-    #         if also_return_visited_nodes:
-    #             return 0, []
-    #         return 0
-
-    #     # Initialize BFS/DFS
-    #     visited = set(queue)
-    #     length = 0
-    #     nodes_in_cluster = []
-
-    #     # Directions for North, South, East, West
-    #     directions = [
-    #         (1, 0), (-1, 0), (0, 1), (0, -1)  # N, S, E, W
-    #     ]
-
-    #     # Perform BFS/DFS
-    #     while queue:
-    #         x, y = queue.pop(0)  # Use queue.pop() if DFS is preferred
-    #         length += 1  # Count this particle
-    #         nodes_in_cluster.append((x, y))
-    #         # Check all adjacent positions
-    #         for dx, dy in directions:
-    #             nx, ny = x + dx, y + dy
-
-    #             # Ensure the neighbor is within bounds
-    #             if 0 <= nx < self.width and 0 <= ny < self.height:
-    #                 # Check if the neighbor has a particle and hasn't been visited
-    #                 if self.board[nx, ny] == 1 and (nx, ny) not in visited:
-    #                     queue.append((nx, ny))
-    #                     visited.add((nx, ny))  # Mark as visited
-
-    #     if also_return_visited_nodes:
-    #         return length, nodes_in_cluster
-    #     return length
 
 
     # returns a list of the size of all cmlusters of that time. len(of this) can tell us the num clusters

@@ -5,7 +5,14 @@
 
 
 
-global_possible_directions = [ [0,1], [1,0], [0,-1], [-1,0] ]
+global_possible_directions = [ 
+    
+    [0,1],   # right
+    [1,0],   # down
+    [0,-1],  # left  
+    [-1,0]   # up 
+    
+    ]
 
 # global_possible_directions = [ [0,1] ]
 
@@ -16,7 +23,7 @@ one_dimensional_possible_directions = [1, -1]
 ## Weights (probabilities) for directions ##
 ############################################
 
-global_weights = [0.25, 0.25, 0.25, 0.25]
+# global_weights = [0.25, 0.25, 0.25, 0.25]
 
 
 
