@@ -193,7 +193,7 @@ class ParticleSystem:
 
 
     def read_and_increment_run_id(self, line_number):
-        assert line_number == 2, 'This is for 2D Particle Systems !'
+        assert line_number == 2, 'This is for 1D Particle Systems !'
 
         file_path = "run_ids.txt"
 

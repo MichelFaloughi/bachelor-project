@@ -3,18 +3,18 @@ from OneDimensionalParticleSystem import OneDimensionalParticleSystem
 import pandas as pd
 
 WORLD_N = 4500
-SCREEN_WIDTH = 200
+SCREEN_WIDTH = 100
 SCREEN_HEIGHT = 100
 MU = 0.6
 DELTA = 0.001
 EPSILON = 0.9 # probability to just follow the nomral direction for one iteration (and not randomly move)
 ALPHA = 0.8 # probability to be an active (normal) particle
-DOT_SIZE = 5
-NUM_ITERATIONS = 1000000000
-INIT_REFRESH_RATE = 1000
+DOT_SIZE = 7
+NUM_ITERATIONS = 10 ** 10
+INIT_REFRESH_RATE = 55
 INIT_PAUSED_STATUS = False
 IS_REDENRING = True
-INIT_ONE_STEP_MODE = True
+INIT_ONE_STEP_MODE = False
 
 running = True
 while running: 

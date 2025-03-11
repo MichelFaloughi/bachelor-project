@@ -206,8 +206,9 @@ class OneDimensionalParticleSystem:
                 # Determine the color for this cell
                 
                 # DEBUGGING:
-                print('Fraction: ', fraction)
-
+                # print('Fraction: ', fraction)
+                # There appears to be a bug here when the system is a certain dimension
+                # I have yet to understand why. For now I will keep 'square' systems
 
                 color = self.get_rgb_tuple_from_fraction(fraction)
 
@@ -375,3 +376,29 @@ class OneDimensionalParticleSystem:
         # Handling rendering or not
         elif key == pygame.K_r:
             self.is_rendering = not self.is_rendering
+
+    
+    
+    def read_and_increment_run_id(self, line_number):
+        assert line_number == 1, 'This is for 2D Particle Systems !'
+
+        file_path = "run_ids.txt"
+
+        with open(file_path, "r") as file:
+            lines = file.readlines()
+
+        # Extract the first number from the specified line
+        first_part = lines[line_number - 1].split()[0]  # Extracts '00000001'
+        new_id = int(first_part) + 1  # Increment by 1
+
+        # Format it back to match the original 8-digit format
+        new_id_str = f"{new_id:08d}"  
+
+        # Replace the first number in the line while keeping the rest unchanged
+        lines[line_number - 1] = new_id_str + "   " + " ".join(lines[line_number - 1].split()[1:]) + "\n"
+
+        # Write the updated content back to the file
+        with open(file_path, "w") as file:
+            file.writelines(lines)
+
+        return first_part
