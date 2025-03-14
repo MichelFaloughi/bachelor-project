@@ -699,7 +699,7 @@ class ParticleSystem:
 
     # this will run de experiment described on 27/02/2025 in the log book
     # returns a dict (a new row to be added to whatever dataframe I am writing to)
-    def run_simulation_latest_experiement(self, min_cluster_size, refresh_rate=100, check_rate=3000, init_render_status=False):
+    def run_simulation_latest_experiment(self, min_cluster_size, refresh_rate=100, check_rate=3000, init_render_status=False):
 
         # record min(iteration of first time we get one single cluster, self.num_iterations)                   -- a single number
         # num large clusters at the end of the simulations                                                     -- a single number   
@@ -888,11 +888,13 @@ class ParticleSystem:
             origin_cluster_cardinality, nodes = self.get_curr_cluster_STRICT_cardinality(also_return_visited_nodes=True)
             print(origin_cluster_cardinality, '  ', nodes)
         
-        # same for cluster size and DEBUG puposes
+        # same for cluster size 
         elif key == pygame.K_x:
             curr_cluster_sizes: list = self.get_curr_cluster_sizes()
             curr_num_clusters : int = len(curr_cluster_sizes)
             
+
+            # and DEBUG puposes
             print(f'''Cluster Sizes: {curr_cluster_sizes}
                   Num Clusters: {curr_num_clusters}''')
 
